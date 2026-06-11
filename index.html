@@ -32,10 +32,9 @@
   .tl-cell { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .tl-num { width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: monospace; font-weight: 700; transition: all .15s; }
   .tl-dot { width: 5px; height: 5px; border-radius: 50%; }
-  .tl-legend { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
-  .tl-leg { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #555; font-family: monospace; }
-  .tl-leg .sw { display: inline-block; width: 7px; height: 7px; border-radius: 2px; }
-  .tl-leg .dotsw { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #EF4444; }
+  .tl-bandrow { display: flex; gap: 3px; min-width: max-content; margin-top: 5px; }
+  .tl-band { height: 19px; border-radius: 4px; display: flex; align-items: center; justify-content: center; padding: 0 4px; overflow: hidden; cursor: pointer; box-sizing: border-box; }
+  .tl-band span { font-size: 9px; font-weight: 700; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .02em; }
   .tabs { display: flex; gap: 2px; padding: 12px 16px 0; border-bottom: 1px solid #1e1e21; }
   .tab { padding: 7px 13px; border-radius: 7px 7px 0 0; border: none; cursor: pointer; font-size: 12px; font-weight: 600; background: transparent; color: #555; border-bottom: 2px solid transparent; }
   .tab.active { background: #1a1a1d; color: #f0f0ec; border-bottom: 2px solid #F04E00; }
@@ -79,13 +78,26 @@
   .catrow .ct { font-size: 10px; color: #555; font-family: monospace; }
   .bar { height: 7px; background: #202024; border-radius: 4px; overflow: hidden; }
   .bar > div { height: 100%; border-radius: 4px; width: 0; transition: width .8s ease; }
+  .goals { padding: 15px 16px; border-radius: 14px; background: #161619; border: 1px solid #242428; margin-bottom: 20px; }
+  .goals-t { font-size: 10px; font-weight: 700; letter-spacing: .14em; color: #555; font-family: monospace; margin-bottom: 13px; }
+  .ms { display: flex; gap: 11px; margin-bottom: 13px; }
+  .ms:last-child { margin-bottom: 0; }
+  .ms .yr { font-size: 10px; font-weight: 700; font-family: monospace; color: #f0f0ec; border-radius: 5px; padding: 4px 7px; height: fit-content; white-space: nowrap; min-width: 58px; text-align: center; }
+  .ms .h { font-size: 13px; font-weight: 700; color: #e4e4e8; line-height: 1.25; }
+  .ms .d { font-size: 11px; color: #777; margin-top: 2px; line-height: 1.4; }
+  .tier-card { margin-bottom: 12px; padding: 12px; border-radius: 10px; background: #1a1a1d; }
+  .tier-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .tier-name { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; }
+  .tier-num { font-size: 9px; font-family: monospace; font-weight: 700; border-radius: 4px; padding: 2px 6px; }
+  .lock { font-size: 9px; color: #5a5a5a; font-family: monospace; margin-bottom: 8px; }
+  .tier-note { margin-top: 9px; padding: 8px 10px; border-radius: 0 6px 6px 0; font-size: 11px; line-height: 1.5; font-style: italic; color: #a0a0a8; }
 </style>
 </head>
 <body>
 <div class="header">
   <div class="eyebrow">Beta 300RR Race &middot; Boise National Forest</div>
   <h1>Enduro Racing Program</h1>
-  <p class="sub">20 weeks &middot; Jun 8 &ndash; Oct 25, 2026 &middot; 3 races</p>
+  <p class="sub">54 weeks &middot; Jun 2026 &rarr; Silver Kings, Jun 2027</p>
 </div>
 <div id="timeline" class="timeline"></div>
 <div id="tabs" class="tabs"></div>
@@ -103,29 +115,39 @@ function setS(key, val) {
 }
 
 // ─── PROGRAM CLOCK ──────────────────────────────────────────────────────────
-var PROG_START = new Date(2026, 5, 8); // Mon Jun 8
+var PROG_START = new Date(2026, 5, 8); // Mon Jun 8, 2026
+var TOTAL_WEEKS = 54;                  // through Silver Kings, ~mid-June 2027
+var GOAL_WEEK = 54;                    // Silver Kings Bronze
 function currentWeek() {
   var days = Math.floor((Date.now() - PROG_START) / 86400000);
-  return Math.min(Math.max(Math.floor(days / 7) + 1, 1), 20);
+  return Math.min(Math.max(Math.floor(days / 7) + 1, 1), TOTAL_WEEKS);
 }
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 var PHASES = [
-  { id:1, weeks:[1,2,3,4],      name:"Foundation", color:"#3B82F6", tagline:"Build the engine. Fix the habits." },
-  { id:2, weeks:[5,6,7,8,9,10], name:"Build",       color:"#F59E0B", tagline:"Load the body. Push the limits." },
-  { id:3, weeks:[11,12],        name:"Race Prep",   color:"#F04E00", tagline:"Taper sharp. First start." },
-  { id:4, weeks:[13,14,15,16],  name:"Rebuild",     color:"#8B5CF6", tagline:"Race data in. Adjust and grow." },
-  { id:5, weeks:[17,18,19,20],  name:"Peak",        color:"#22C55E", tagline:"Arrive at Tamarack ready." },
+  { id:1,  weeks:[1,2,3,4],                          name:"Foundation",      color:"#3B82F6", tagline:"Build the engine. Fix the habits." },
+  { id:2,  weeks:[5,6,7,8,9,10],                     name:"Build",           color:"#F59E0B", tagline:"Load the body. Push the limits." },
+  { id:3,  weeks:[11,12],                            name:"Race Prep",       color:"#F04E00", tagline:"Taper sharp. First start." },
+  { id:4,  weeks:[13,14,15,16],                      name:"Rebuild",         color:"#8B5CF6", tagline:"Race data in. Adjust and grow." },
+  { id:5,  weeks:[17,18,19,20],                      name:"Peak",            color:"#22C55E", tagline:"Arrive at Tamarack ready." },
+  { id:6,  weeks:[21,22,23],                         name:"Transition",      color:"#64748B", tagline:"Absorb the season. Heal. Reset." },
+  { id:7,  weeks:[24,25,26,27,28,29,30,31,32,33,34,35], name:"Winter Engine", color:"#38BDF8", tagline:"Mountains are closed. Build the engine." },
+  { id:8,  weeks:[36,37,38,39,40,41,42,43],          name:"Technical Ramp",  color:"#14B8A6", tagline:"Thaw. Reintroduce terrain. Get coached." },
+  { id:9,  weeks:[44,45,46,47,48,49,50,51],          name:"Spring Terrain",  color:"#84CC16", tagline:"High country opens. Become a hard-enduro rider." },
+  { id:10, weeks:[52,53,54],                         name:"Silver Kings",    color:"#D97706", tagline:"Taper sharp. Race the Bronze course." },
 ];
 function ph(w) { return PHASES.find(function(p){ return p.weeks.indexOf(w) !== -1; }); }
 
-var WK_DATES = [
-  "Jun 8–14","Jun 15–21","Jun 22–28","Jun 29–Jul 5",
-  "Jul 6–12","Jul 13–19","Jul 20–26","Jul 27–Aug 2",
-  "Aug 3–9","Aug 10–16","Aug 17–23","Aug 24–30",
-  "Aug 31–Sep 6","Sep 7–13","Sep 14–20","Sep 21–27",
-  "Sep 28–Oct 4","Oct 5–11","Oct 12–18","Oct 19–25",
-];
+// Week date labels auto-generated from PROG_START (7-day blocks)
+var MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function fmtWeekRange(start) {
+  var end = new Date(start.getTime() + 6 * 86400000);
+  var s = MON[start.getMonth()] + " " + start.getDate();
+  var e = (start.getMonth() === end.getMonth()) ? ("" + end.getDate()) : (MON[end.getMonth()] + " " + end.getDate());
+  return s + "–" + e;
+}
+var WK_DATES = [];
+(function(){ for (var i = 0; i < TOTAL_WEEKS; i++) { WK_DATES.push(fmtWeekRange(new Date(PROG_START.getTime() + i * 7 * 86400000))); } })();
 var DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
 var WT = {
@@ -143,21 +165,21 @@ var WT = {
 var TPL = {
   1:[
     { t:"mob",  h:"Mobility + 20 min walk",       b:["Hip flexor stretch 2×45s/side","90/90 hip rotation 2×10/side","Pigeon pose 2×45s/side","Thoracic rotation 2×10/side","20 min easy walk","Wrist and forearm circles"] },
-    { t:"str",  h:"Full Body Strength A",         b:["3×10 Goblet squat","3×10 Romanian deadlift","3×10 Push-ups","3×8 Bent-over row","2×30s Plank","2×15 Dead bug","3×15 Wrist curl + reverse curl"] },
+    { t:"ride", h:"Skill Ride — Fundamentals (backyard)", b:["45–60 min at your friend's — short and deliberate, not a workout","Figure-8s and slow-speed balance until it feels boring, then keep going","Two-finger clutch and two-finger brake on EVERY input — no exceptions","Attack-position holds: elbows up, knees gripping, weight centered — 10×30s","Slow-as-possible straight line — last wheel to the line wins","Catch a whole-hand grab? Stop, reset, redo that rep correctly"], n:"Habit-correction day. Six clean minutes of two-finger clutch beats an hour of sloppy riding. This is the rep frequency that actually overwrites the CRF230F muscle memory." },
     { t:"z2",   h:"Zone 2 Cardio — 45 min",       b:["Bike, row, or easy jog — conversational pace","Nasal breathing: if you can't hold it, slow down","HR target 120–140 bpm","This builds your aerobic foundation — protect it"] },
-    { t:"str",  h:"Core + Forearm Circuit",       b:["3×30s Plank","3×12 Ab wheel rollout","3×10/side Side plank hip dip","3×15 Wrist curl (palms up)","3×15 Reverse wrist curl (palms down)","3×20s Dead hang","2× Farmer carry 20m/hand"] },
-    { t:"str",  h:"Full Body Strength B",         b:["3×10 Bulgarian split squat","3×10 Hip thrust","3×8 Pull-ups or lat pulldown","3×10 DB shoulder press","3×10 Face pulls","3×20s Dead hang","2×30s Hollow body hold"] },
+    { t:"str",  h:"Full Body Strength A",         b:["3×10 Goblet squat","3×10 Romanian deadlift","3×10 Push-ups","3×8 Bent-over row","2×30s Plank","2×15 Dead bug","3×15 Wrist curl + reverse curl"] },
+    { t:"str",  h:"Full Body Strength B + Grip",  b:["3×10 Bulgarian split squat","3×10 Hip thrust","3×8 Pull-ups or lat pulldown","3×10 DB shoulder press","3×10 Face pulls","3×12 Ab wheel rollout","3×20s Dead hang","2× Farmer carry 20m/hand"], n:"This day now carries the forearm/core work from the old circuit — grip and core are folded in so dropping a strength day costs you nothing where arm pump is concerned." },
     { t:"ride", h:"Ride — Fundamentals Focus",    b:["2–3 hrs total riding time","Drill: slow-speed balance — figure 8s and slow straights","Two-finger clutch and brake every section","Attack position: elbows up, knees grip tank, weight centered","Cornering: look through the corner, let the body lead","No hero laps — this is skill work"], n:"If you catch yourself reverting to whole-hand clutch, stop, reset, and restart that section." },
     { t:"rec",  h:"Active Recovery",              b:["30 min easy walk or swim","Full stretch: quads, hip flexors, hamstrings, calves, shoulders","Foam roll: thoracic spine, IT band, hip flexors","Hydrate well — elevation riding dehydrates fast"] },
   ],
   2:[
     { t:"mob",  h:"Mobility — 25 min",            b:["Hip flexor + pigeon pose 2×45s/side","Thoracic rotation 2×10/side","Band shoulder stretches","Ankle mobility","Wrist and forearm stretches"] },
-    { t:"str",  h:"Lower Body + Core",            b:["4×6–8 Back squat (heavier than Phase 1)","4×8 Romanian deadlift","3×10 Walking lunges with weight","3×12 Hip thrust","3×12 Copenhagen side plank","3×30s Hollow body hold","2×15 Pallof press (anti-rotation)"] },
+    { t:"ride", h:"Skill Ride — Obstacles + Clutch (backyard)", b:["45–60 min focused — warm up with figure-8s to keep Phase 1 habits sharp","Pole crossings: weight back, small throttle blip, let the front lift over — both directions","Controlled clutch-up on FLAT ground: loft the front a few inches, then set it down","Cover the rear brake on every clutch-up — a tap drops a front end coming up too far","Pivot turns around a marker: clutch + throttle to bring the rear around","Front-wheel placement: put the wheel exactly where you're looking"], n:"Clutch-ups start small and flat for weeks before they ever go over a pole. The covered rear brake is your loop-out insurance — build that reflex now, while it's low and slow." },
     { t:"z2",   h:"Zone 2 — 60 min",              b:["60 min easy effort — cycling preferred (lower impact)","Trail running excellent for terrain specificity","HR 125–145 bpm, nasal breathing","Biggest fitness return in the program — don't skip it"] },
+    { t:"str",  h:"Full Body Strength (heavy)",   b:["4×6–8 Back squat (heavier than Phase 1)","4×8 Romanian deadlift","4×6–8 Weighted pull-ups or lat pulldown","4×8 Bent-over row","3×10 DB shoulder press","3×12 Copenhagen side plank","3×30s Dead hang + 3×15 wrist roller (grip)"], n:"One consolidated heavy full-body day replaces the old split — the skill ride took its slot. With two ride days loading your legs and forearms, one hard strength session holds your gains in-season." },
     { t:"hiit", h:"HIIT + Grip Strength",         b:["5 min warm-up jog","8 rounds: 40s max effort / 20s rest (burpees, squat jumps, mountain climbers)","5 min active recovery walk","Grip circuit: 3×30s tennis ball squeezes, 3×20s dead hang, 3×15 wrist roller"] },
-    { t:"str",  h:"Upper Body + Pull Focus",      b:["4×6–8 Weighted pull-ups or lat pulldown","4×8 Bent-over row","3×10 Archer or decline push-ups","3×12 Face pulls","3×20 Wrist curl + reverse curl","3×30s Dead hang","2×15 Farmer carry (heavier load)"] },
     { t:"ride", h:"Ride — Technical + Pace",      b:["3 hrs total","20 min easy warm-up","30–45 min sustained riding at ~70% effort","Skill focus: rocky terrain, steep climbs, switchbacks","Track arm pump — note when it starts and what triggers it"], n:"Time yourself on a familiar climb. This is your baseline. You'll beat it by Phase 5." },
-    { t:"rec",  h:"Recovery or Easy Second Ride", b:["Option A: 30 min walk + stretch + foam roll","Option B: Easy 2-hr ride at Zone 2 pace only — no pushing","If riding: this is active recovery, not training","You trained hard this week — recover hard too"] },
+    { t:"rec",  h:"Active Recovery",              b:["30 min walk + full stretch + foam roll","With two ride days now, this is genuine REST — resist a third ride","Light mobility only, nothing that adds fatigue","Recover hard so Tuesday and Saturday are both quality"], n:"You used to have the option of an easy second ride here. The Tuesday skill ride is that second day now — so Sunday goes back to real recovery to keep the week sustainable." },
   ],
   3:[
     { t:"mob",  h:"Easy Mobility — 20 min",       b:["Light full-body stretch only","Hip flexors, hamstrings, shoulders","Nothing aggressive — arrive at race day fresh"] },
@@ -170,27 +192,81 @@ var TPL = {
   ],
   4:[
     { t:"rec",  h:"Post-Race Mobility",           b:["Easy full-body stretch","Focus on what's sore: hip flexors, forearms, neck, lower back","Foam roll thoroughly","Recovery is training — don't skip this"] },
-    { t:"str",  h:"Strength — Back to Build",     b:["Return to Phase 2 Strength A","If forearms were the race limiter: +2 extra dead hang sets","If legs failed: +2 extra split squat sets","Be honest about what the race told you"] },
+    { t:"ride", h:"Skill Ride — Advanced + Race Weakness (backyard)", b:["45–60 min — bias toward whatever the last race exposed","If you're still cooked from the race weekend, keep it easy and technical only","Clutch-up the front over a pole on command, both directions","Spaced poles: work the rhythm and timing between obstacles","Pivot / rolling endo to reposition in a tight spot","Combine clutch-up with a turn — loft, place the wheel, steer out"], n:"Fundamentals are automatic by now, so this day is for the hard stuff and for drilling the exact thing that cost you time at Preston or Baker City." },
     { t:"z2",   h:"Zone 2 — 60 min",              b:["60 min easy effort","Use this time to mentally debrief the race","What lines cost you time? What positions caused fatigue?","Zone 2 is thinking time"] },
+    { t:"str",  h:"Strength — Build + Adjust",    b:["Consolidated full-body day (squat, RDL, pull-ups, row, press)","If forearms were the race limiter: +2 extra dead hang sets","If legs failed: +2 extra split squat or lunge sets","Slightly heavier than your last Phase 2 cycle","Be honest about what the race told you"], n:"Merged into one full-body day to make room for the skill ride — adjust the emphasis to your race limiter." },
     { t:"hiit", h:"HIIT + Race Weak Spot Work",   b:["6–8 rounds 40s on / 20s off","If arm pump was the race limiter: replace 1 HIIT round with dead hang circuit","If cardio failed: add 2 rounds to HIIT","If starts were rough: add 5× sprint starts (20m explosive runs)"] },
-    { t:"str",  h:"Strength B + Adjustment",      b:["Phase 2 Strength B template","Adjust based on race limiter","Progressive: slightly heavier than last Phase 2 cycle","Grip priority: 4×30s dead hang if arm pump was race issue"] },
     { t:"ride", h:"Ride — Target Weakness",       b:["3 hrs total","30 min easy reactivation","Spend deliberate time on race's hardest sections","Rocky climbs? Arm pump on straights? Switchbacks?","Finish with 20 min sustained race-pace effort"], n:"The race gave you your real curriculum. Now train that specific weakness." },
     { t:"rec",  h:"Active Recovery",              b:["30 min walk","Stretch + foam roll","Review race notes or results","Update your goal for the next race"] },
   ],
   5:[
     { t:"mob",  h:"Mobility — 20 min",            b:["Maintenance stretch: hips, thoracic, forearms","Keep short — body needs recovery at peak load"] },
-    { t:"str",  h:"Peak Strength — High Effort",  b:["4×5–6 Back squat (near-max this cycle)","4×5–6 Romanian deadlift","4×6–8 Weighted pull-ups","3×8 Push-ups","4×25s Dead hang — highest grip volume yet"] },
+    { t:"ride", h:"Skill Ride — Sharpen + Flow (backyard)", b:["45 min, crisp and confident — you're peaking, not building","Clutch-ups and pole work linked into flow, on command","Loft, place, pivot — all without thinking about it","Keep it clean: no crashes this close to Tamarack","Short and sharp, then off the bike — protect the taper that's coming"], n:"Peak skill work is about automaticity and confidence, not new tricks. Don't go big and risk a crash with the goal race weeks out." },
     { t:"z2",   h:"Zone 2 — 60 min",              b:["Last big Zone 2 block before taper","60 min cycling or trail run","Maintain pace, don't push into Zone 3","Trust the 17 weeks of work behind this session"] },
+    { t:"str",  h:"Peak Strength — Full Body",    b:["4×5–6 Back squat (near-max this cycle)","4×5–6 Romanian deadlift","4×6–8 Weighted pull-ups","4×8 Heavy bent-over row","3×8 Push variation","4×30s Dead hang — highest grip volume yet"], n:"Peak strength and peak upper merged into one full-body day so the skill ride keeps its slot through peak." },
     { t:"hiit", h:"Peak HIIT — 10 Rounds",        b:["10 rounds 40s on / 20s off (full effort)","Mix: burpees, squat jumps, KB swings, mountain climbers","Grip: 4×30s dead hang, 3×20 wrist roller","Highest HIIT volume in the program"] },
-    { t:"str",  h:"Peak Upper Body",              b:["4×6–8 Weighted pull-ups","4×8 Heavy bent-over row","3×10 Push variation","3×12 Face pulls","4×30s Dead hang — last heavy grip session before taper"] },
     { t:"ride", h:"Ride — Full Mock Race",        b:["4 hrs total","15 min warm-up","45–60 min race-pace lap — treat it exactly like race day","Short break, then second 30 min push","Cool down","You are now as fit as you have ever been on a dirt bike"], n:"Dry run the whole Tamarack day: same pre-ride food, same routine, same gear check. Simulate it completely." },
     { t:"rec",  h:"Active Recovery",              b:["30 min walk, full stretch, foam roll","You've done the work.","Taper begins next week."] },
+  ],
+  6:[
+    { t:"mob",  h:"Easy Mobility",                b:["Gentle full-body stretch","Address anything the season left sore: wrists, shoulders, lower back","No agenda — you just finished a race season"] },
+    { t:"ride", h:"Ride for Fun (weather permitting)", b:["No drills, no timing — just ride if it's dry and you feel like it","Reconnect with why you do this","If the weather's turned, skip it guilt-free"], n:"Transition weeks are for absorbing the season, not building. Resist the urge to start the next block early." },
+    { t:"z2",   h:"Easy Zone 2 — 40 min",         b:["Easy spin, walk, or jog","Keep it conversational","Just keep the aerobic base ticking over"] },
+    { t:"str",  h:"Strength Reboot — Light",      b:["Full body at 60% — reintroduce the movements","3×10 squat, RDL, push, pull","Nothing to failure — wake the system up, don't smash it","Light grip: 2×20s dead hang"] },
+    { t:"rec",  h:"Recovery / Bike Teardown",     b:["Off-season bike service: pull it down, inspect everything the season beat up","Top-end check, fresh fluids, bearings, spokes","Order anything that needs replacing before the winter block"] },
+    { t:"ride", h:"Easy Social Ride or Rest",     b:["Low-pressure ride with friends if conditions allow, OR full rest","Process the season: what did Tamarack reveal as your #1 limiter?","Write it down — it shapes the entire winter block"], n:"Your Tamarack limiter (arms, lungs, or technique) is the single most useful data point you have. Let it set the winter emphasis." },
+    { t:"rec",  h:"Full Rest",                    b:["Genuine rest day","Reflect on the season, set the Silver Kings intention","Recharge — the long build starts soon"] },
+  ],
+  7:[
+    { t:"mob",  h:"Mobility — 25 min",            b:["Full mobility: hips, thoracic, shoulders, wrists","Winter stiffness is real — stay on top of it","Wrist/forearm prep for the grip work ahead"] },
+    { t:"ride", h:"Skill Maintenance — Ride or Garage", b:["IF rideable (dry valley floor / plowed lot): 45 min Tier 1–2 drills","IF not: 30 min garage work — clutch feathering, balance on the bike, two-finger reps","Sit on the bike and drill clutch control even in the garage — reps still count","Seize any dry, clear day — winter riding is opportunistic"], n:"Boise winters mean the mountains are shut and trail time is scarce. Don't fight it — bank reps when conditions allow and keep the motor patterns alive in the garage when they don't." },
+    { t:"z2",   h:"Zone 2 — 60 min (indoor OK)",  b:["Indoor trainer, spin bike, or treadmill is totally fine here","60 min easy aerobic — protect the base through winter","Nasal breathing, HR 125–145","This is where you keep the engine warm when you can't ride"] },
+    { t:"str",  h:"HEAVY Strength — Build Block",  b:["This is the winter priority: build maximal strength while you can't ride much","4×4–6 Back squat — progressive, heavier each cycle","4×5 Romanian deadlift","4×5 Weighted pull-ups","4×6 Bench or weighted dip","3×8 Bent-over row","Build now — you can't get stronger during race season"], n:"Winter is your one real strength-building window all year. Push it. A bigger engine in March pays off on every Bronze-course climb in June." },
+    { t:"hiit", h:"HIIT + Heavy Grip",            b:["8–10 rounds 40s on / 20s off","Grip is the hard-enduro limiter — make it the winter star","4×40s dead hang (add weight as you progress)","3×20 wrist roller, 3×30s thick-bar / towel hangs","Forearm endurance for a 4-hour Bronze course starts now"] },
+    { t:"ride", h:"Long Day — Ride or Indoor Endurance", b:["IF a window opens: longest ride the conditions safely allow","IF snowed in: 75–90 min indoor endurance + 30 min garage skill drills","Consider a winter desert trip (St. George, AZ, southern ID) to bank real terrain reps","One terrain weekend beats a month of garage work — go if you can"], n:"The single best winter move is a trip south to ride real terrain. If you can swing one or two, it changes your spring readiness completely." },
+    { t:"rec",  h:"Recovery",                     b:["Walk, stretch, foam roll","Heavy strength weeks demand real recovery","Sleep and protein — that's where the strength gains actually happen"] },
+  ],
+  8:[
+    { t:"mob",  h:"Mobility — 20 min",            b:["Maintenance mobility","Prep wrists, hips, ankles for terrain returning","Keep it short"] },
+    { t:"ride", h:"Skill Ride — Terrain Returns", b:["Lower elevations open first — get on real dirt as it thaws","Tier 2–3 ladder focus: obstacle sequences, pivots, hill restart, zaps","Rebuild terrain confidence gradually — you've been off the mountain a while","45–75 min, technical bias over distance"], n:"Reintroduce terrain skill deliberately. The fitness you built all winter now gets converted into bike-specific capability." },
+    { t:"z2",   h:"Zone 2 — 60 min",              b:["Shift toward trail running / cycling on real terrain as weather allows","Maintain the winter aerobic base","HR 125–145"] },
+    { t:"str",  h:"Strength → Power Endurance",   b:["Transition from winter max-strength toward strength-endurance","3×8–10 squat (lighter, faster intent)","3×10 RDL, 3×10 pull-ups, 3×12 lunges","3×30s dead hang + wrist roller","Convert raw strength into the endurance the Bronze course needs"] },
+    { t:"hiit", h:"HIIT + Grip",                  b:["8 rounds 40s / 20s","Maintain the heavy grip work — 3×40s dead hangs","Bias drills toward your Tamarack limiter"] },
+    { t:"ride", h:"Technical Terrain Ride",       b:["The key session of this phase — rocky, steep, technical ground","Build duration week over week toward 2–3 hrs","Hunt out the gnarliest legal terrain near Boise","Apply clinic lessons here if you've done one"], n:"This is where Silver Kings is actually built. Backyard skills don't transfer to a mountain course — real technical terrain does." },
+    { t:"rec",  h:"Active Recovery",              b:["Walk, stretch, foam roll","Review terrain rides — what's improving, what's still scary?","Note skills to drill next week"] },
+  ],
+  9:[
+    { t:"mob",  h:"Mobility — 20 min",            b:["Maintenance stretch","Keep the body loose for big terrain days","Wrist/forearm prep"] },
+    { t:"ride", h:"Skill Ride — Advanced Obstacles", b:["Tier 3 ladder work on real terrain: zaps, balance-point wheelies, rolling endos","Clutch-ups over obstacles on command","Front-wheel placement at speed","Keep building the hard-enduro vocabulary the Bronze course demands"], n:"By now you're riding terrain regularly. This day sharpens the specific obstacle skills Silver Kings will test." },
+    { t:"z2",   h:"Zone 2 — 60 min",              b:["Maintain aerobic base — don't lose it chasing terrain","Cycling or trail run","Easy effort, protect recovery for the big Saturday rides"] },
+    { t:"str",  h:"Strength — Maintenance",        b:["In-season volume: 1 solid full-body day holds your winter gains","3×6 squat, 3×8 RDL, 3×6 pull-ups, 3×8 row","4×30s dead hang — keep grip endurance peaked","Don't add fatigue that compromises terrain riding"] },
+    { t:"hiit", h:"HIIT + Grip",                  b:["8 rounds 40s / 20s","Heavy grip maintained — arm pump is THE Bronze-course limiter","Race-specific conditioning"] },
+    { t:"ride", h:"BIG Technical Mountain Ride",   b:["The cornerstone session — high country is opening up","Build toward a 4-hour ride matching the Bronze time limit","Replicate the Bronze course profile from your 2026 scouting photos","Sustained technical climbs, steep descents, talus, endurance","This IS your Silver Kings simulation"], n:"Work up to a ride that matches Bronze in length and terrain. If you can finish that feeling strong, you can finish Silver Kings." },
+    { t:"rec",  h:"Active Recovery",              b:["Walk, full stretch, foam roll","Big terrain days need real recovery","Hydrate, eat well, sleep"] },
+  ],
+  10:[
+    { t:"mob",  h:"Taper Mobility — Light",        b:["Gentle full-body stretch only","Nothing aggressive — arrive at Silver Kings fresh","Trust the year of work"] },
+    { t:"str",  h:"Maintenance Strength — 50%",    b:["3×6 squat at 50% — keep the pattern, shed the fatigue","3×6 pull-ups","3×15 wrist curl + 3×20s dead hang","No failure, no soreness"] },
+    { t:"z2",   h:"Easy Zone 2 — 30 min",          b:["Short and easy","HR under 135","Taper is real — honor it"] },
+    { t:"ride", h:"Sharpen — Short Technical",      b:["45 min on familiar technical terrain","Crisp obstacle reps, no learning, no risk","Confirm bike and body feel dialed","No crashes this close to the goal race"] },
+    { t:"rest", h:"Rest + Bronze Bike Prep",        b:["Silver Kings Bronze is brutal on bikes — go through everything","Fresh top-end consideration, all fluids, bearings, spokes, chain","Spare kit doubled: master link, levers, tubes/mousse, fuses, tools","Mountain course = self-sufficiency. Pack for problems"] },
+    { t:"ride", h:"Pre-Event Shakedown",            b:["Easy 60 min — final systems check","Everything working: brakes, clutch, cooling","Then rest — the work is done"], n:"This template covers the taper; the Silver Kings event days are mapped in Week 54." },
+    { t:"rec",  h:"Rest",                          b:["Full rest","Carb-load lightly","Travel and final prep per Week 54"] },
   ],
 };
 
 var OVR = {
+  1: {
+    0: { t:"mob",  h:"Ease-In Mobility + Walk",          b:["Gentle full-body mobility — hips, thoracic, wrists, ankles","20–30 min easy walk","The goal this week is to ramp in, not to train hard","Real structured training starts Week 2"], n:"Week 1 is a deliberate ease-in. Don't chase intensity — get moving, get on the bike, and set yourself up to start strong Monday of Week 2." },
+    1: { t:"ride", h:"Easy Shakedown Ride",              b:["Get reacquainted with the bike — no drills, no agenda","Confirm everything works: clutch, brakes, cooling, lights","Easy pace, fun first — wake the riding muscles up","Note anything to sort before Week 2"] },
+    2: { t:"z2",   h:"Easy Zone 2 — 30 min",             b:["Light aerobic — bike, row, or easy jog","Conversational pace, HR 120–140","Short and easy — you're easing in"] },
+    3: { t:"str",  h:"Movement Prep — Light",            b:["Learn the lifts at light load: squat, hinge, push, pull","2×10 each, bodyweight or empty bar","Grease the groove — no soreness","Sets the patterns for real strength work in Week 2"] },
+    4: { t:"mob",  h:"Mobility + Gear & Bike Check",      b:["Light stretch","Sort and check all your gear: helmet, boots, protection, pack","Bike once-over: fluids, chain, spokes, tire pressure","Everything ready so Week 2 starts clean"] },
+    5: { t:"ride", h:"Easy Fundamentals Spin",           b:["Short, easy ride — feel the bike, no pressure","A few light two-finger clutch/brake reps if you feel like it","Keep it well under an hour","Save the real fundamentals work for Week 2's skill ride"] },
+    6: { t:"rec",  h:"Rest + Read Ahead",                b:["Full rest","Skim Week 2 so you know what's coming","Commit to the start — the structured program begins tomorrow","Rested, prepped, and ready"] },
+  },
   2: {
-    3: { t:"watch", h:"🏁 Silver Kings — Arrive + Day 1", b:["Drive to Kellogg, ID (3.5 hrs from Boise)","Thursday practice day — watch course inspection and prologue","FIM Hard Enduro World Championship round","Study every body position and line you see","Talk to riders in the pits — the community is open"], n:"Don't enter. You're here to learn what you're training toward." },
+    3: { t:"watch", h:"🏁 Silver Kings — Arrive + Day 1", b:["Drive to Kellogg, ID (~7 hrs from Boise — it's up in the panhandle)","Thursday practice day — watch course inspection and prologue","FIM Hard Enduro World Championship round","Study every body position and line you see","Talk to riders in the pits — the community is open"], n:"Don't enter. You're here to learn what you're training toward — and to scout the Bronze course for your 2027 run." },
     4: { t:"watch", h:"Silver Kings — Main Race Day",     b:["Full day spectating at Silver Mountain","Watch Bronze course — that's your trajectory","Gondola access to upper sections of the course","List 3 specific skills you want to develop after watching"] },
     5: { t:"watch", h:"Silver Kings — Final Day / Drive Home", b:["Watch final racing","Drive home — good mental debrief time","Write down the 3 skills you identified yesterday","These become Phase 2 ride focuses"] },
   },
@@ -225,6 +301,30 @@ var OVR = {
     5: { t:"race", h:"🏁 RACE 3 — SIDRA / WHS Tamarack Resort, ID", b:["This is the one. 20 weeks of work brought you here.","AMA West Hare Scrambles co-sanction — bigger, more competitive field","Arrive 75 min before class start, warm up 15 min on the bike","Your race start is dialed — you've done this twice before","Goal: mid-pack in class","Stay smooth. Stay consistent. Trust the training."] },
     6: { t:"race", h:"Race Day 2 / Celebrate",            b:["Race or recovery depending on event format","Compare your finishing position to your 20-week starting point","You've completed a full training cycle and three races","This is the beginning — not the end."] },
   },
+  39:{
+    5: { t:"ride", h:"🎓 Hard Enduro Clinic — Day 1",     b:["The single highest-leverage purchase toward Silver Kings","A coach compresses months of trial-and-error into a weekend","Film yourself — review with the instructor","Soak up everything on rock, climbs, and obstacle technique"], n:"Book this early — good hard-enduro clinics fill up. Worth traveling for." },
+    6: { t:"ride", h:"🎓 Hard Enduro Clinic — Day 2",     b:["Drill the Day 1 lessons until they stick","Ask specifically about Bronze-course-style terrain","Write down 5 things to train for the next 8 weeks","These become your Spring Terrain focuses"] },
+  },
+  45:{
+    0: { t:"rest", h:"⚖️ GO / NO-GO Checkpoint",          b:["Honest self-assessment: are the technical skills there for Bronze?","Can you ride steep, rocky, technical terrain for 2+ hrs without falling apart?","Where are you on the Skills Ladder — through Tier 2, into Tier 3?","GO: commit, enter, book travel. NO-GO: push to 2028 or pick a smaller hard enduro first — both are smart","Decide now so the next 9 weeks have a clear target"], n:"This checkpoint is not pass/fail on you — it's a planning decision. Choosing to wait a year is a sign of good judgment, not failure." },
+  },
+  50:{
+    5: { t:"ride", h:"🏔️ Bronze Course Simulation",       b:["Your dress rehearsal: 4 hrs, Bronze-length, Bronze-style terrain","Match the profile from your 2026 scouting photos as closely as you can","Same pre-ride food, hydration, and gear you'll race with","If you finish this strong, you're ready for Kellogg"], n:"This is the most important ride of the spring. Treat it exactly like race day." },
+  },
+  53:{
+    4: { t:"rest", h:"Rest + Full Bronze Bike Prep",      b:["Complete the brutal-course bike prep — every fluid, bolt, bearing","Spare kit doubled for a self-sufficient mountain race","Load truck/trailer — nothing rushed"] },
+    5: { t:"ride", h:"Final Shakedown — Easy",            b:["60–90 min easy on familiar terrain","Confirm bike and body both feel dialed","No hard efforts — Silver Kings is days away"] },
+    6: { t:"rec",  h:"Rest + Travel Prep",                b:["Full stretch, light carb-load","Confirm entry, AMA / sanction paperwork, accommodation in Kellogg","Early night"] },
+  },
+  54:{
+    0: { t:"rest", h:"Taper — Full Rest",                 b:["No training","Eat well, finalize travel","Visualize the Bronze course from your scouting"] },
+    1: { t:"mob",  h:"Gentle Mobility Only",              b:["Light stretch only","Nothing that causes soreness"] },
+    2: { t:"rest", h:"Travel to Kellogg, ID",             b:["Drive to Silver Mountain (~7 hrs from Boise — plan the haul)","Check in, rest after the drive","Hydrate, early night"] },
+    3: { t:"rest", h:"Recon + Rest",                      b:["Walk what you can of the Bronze course / venue","Watch practice if open — study lines on the climbs and obstacles","Lay out all gear, early night","Everything you trained for is tomorrow"] },
+    4: { t:"race", h:"🏁 SILVER KINGS — Prologue / Bronze", b:["The goal race. One year of work brought you here.","Prologue + Bronze course racing (confirm exact format/schedule on site)","Bronze is the amateur course — your job is to FINISH","Pace the climbs, manage arm pump, eat and drink early","Stay smooth and self-sufficient — it's a mountain, not a hare scramble"], n:"Dates and format aren't published this far out — confirm the 2027 schedule when registration opens." },
+    5: { t:"race", h:"🏁 SILVER KINGS — Bronze Main",     b:["Race the Bronze main per the weekend format","Everything you built over 54 weeks is in the tank","Finish the Bronze course at a Hard Enduro World Championship round","Whatever the result — you went from CRF230F habits to this in a year"] },
+    6: { t:"rec",  h:"Recover + Celebrate",               b:["Soak it in","Compare where you started to where you finished","Set the next target — Silver class? Erzberg someday?","This was never the end of the road"] },
+  },
 };
 
 function getDay(w, d) {
@@ -238,6 +338,7 @@ var RACES = [
   { week:12, type:"RACE #1", name:"SIDRA Grassroots",           date:"Aug 29–30",  loc:"Preston, ID",         color:"#F04E00", goal:"Finish the race. C class. Your goal is to learn the format — starts, pacing, course reading.", prep:["Join AMA ($49/yr) at americanmotorcyclist.com","Join SIDRA at sidraracing.org","Complete online pre-entry before the event","AMA card ready: digital or printed","Spare kit: master link, 2× zip ties, inline fuses, patch kit, multitool","Hydration pack stocked for 2-hr effort","Petcock verified (!), all fluids fresh","Goal: finish and record your gap to mid-pack"] },
   { week:14, type:"RACE #2", name:"SIDRA Elk Horn",             date:"Sep 12–13",  loc:"Baker City, OR",      color:"#8B5CF6", goal:"Apply Race 1 lessons. Finish closer to mid-pack than Preston.", prep:["Same checklist as Race 1","Add anything that was missing at Grassroots","Set a lap-time target based on Race 1 result","Write a pacing plan for laps 2 and 3","If arm pump was Race 1 limiter: add a relaxation cue note on bar pad"] },
   { week:20, type:"RACE #3", name:"SIDRA / WHS Tamarack",       date:"Oct 24–25",  loc:"Tamarack Resort, ID", color:"#22C55E", goal:"Mid-pack finish in C class. This is what 20 weeks of training is for.", prep:["SIDRA + AMA memberships current","Pre-entry complete for both SIDRA and WHS co-sanction","Drive to Tamarack (~1.5 hrs from Boise) Thu/Fri","Course recon ride Friday if permitted (20 min easy)","Full bike prep completed Thursday","Carb-load lightly Mon–Thu","Arrive race morning 75 min early","Target: finish within 10% of class leader time"] },
+  { week:54, type:"A-RACE", name:"Silver Kings — Bronze, B class", date:"Jun 2027", loc:"Kellogg, ID", color:"#D97706", goal:"THE goal. Finish the Bronze course at a Hard Enduro World Championship round. A full year of work, one rung up the ladder.", prep:["Decision confirmed at the spring GO/NO-GO checkpoint (Week 45)","Hard-enduro clinic completed (Phase 8)","Bronze course scouted at the 2026 spectate trip — photos turned into spring curriculum","4-hour Bronze simulation ride completed strong (Week 50)","Through Tier 2 and into Tier 3 of the Skills Ladder","Registration + sanction paperwork done when 2027 entry opens","Brutal-course bike prep: fresh everything, doubled spare kit","Accommodation booked in Kellogg (~7 hrs from Boise)","Confirm 2027 dates and format when published"] },
 ];
 
 var SKILLS = [
@@ -245,9 +346,49 @@ var SKILLS = [
   { phase:1, cat:"Basic Technical", items:["Slow-speed balance: figure 8s and near-stationary straight balance","Log crossings: momentum commitment + weight shift rearward","Basic cornering: look through corner, body leads bike into lean","Rut navigation: look further ahead, relax arms, let bike move beneath you"] },
   { phase:2, cat:"Technical Terrain", items:["Rocky climbs: commit to momentum, clutch slip on steep technical pitches","Technical descents: weight back, two fingers covering brake, no death-grip","Switchbacks: wide entry → apex with inside peg weighted → wide exit","Loose over hard: keep front wheel light, weight rearward","Sidehill traversing: uphill peg weighted, eyes far ahead"] },
   { phase:2, cat:"Pace + Fitness",  items:["30 min sustained riding at race pace without arm pump shutting you down","Controlled breathing during effort: belly breaths on straight sections","Heart rate management: back off before redline, not after","Grip relaxation on low-risk sections to reset forearms mid-ride"] },
+  { phase:2, cat:"Obstacle & Clutch Control", items:["Pole/log crossing: weight back, throttle blip, let the front lift over — both directions","Controlled clutch-up on flat ground: loft the front a few inches and set it down clean","Rear brake covered on every clutch-up — reflexive, not an afterthought","Pivot turn around a marker: clutch + throttle to swing the rear around","Front-wheel placement: put the wheel exactly where you look, every time","Slow-speed clutch feathering over uneven ground without stalling"] },
   { phase:3, cat:"Race Craft",      items:["Hare scramble row start: smooth launch, don't spin the rear wheel","First lap pacing: resist racing everyone off the line — find your own pace","Course marking: read arrows confidently, plan next gate while on current","Passing: announce yourself, wait for a safe section, clean pass only","Being passed: hold your line, let faster riders through cleanly"] },
   { phase:4, cat:"Race Refinement", items:["Identify your personal limiting factor (arms, lungs, or technique — be honest)","Adjust line selection based on traffic and fatigue level mid-race","Fuel and hydration timing: eat and drink before you feel you need to","Reading mid-race fatigue and compensating with better technique, not more effort"] },
+  { phase:4, cat:"Advanced Obstacle Mastery", items:["Clutch-up the front over a pole on command, both directions","Spaced poles: hold a rhythm and time the lofts between obstacles","Rolling endo / front-wheel pivot to reposition in a tight spot","Combine clutch-up with a turn — loft, place the wheel, steer out","Read an obstacle at speed and instinctively choose loft vs. roll-over"] },
   { phase:5, cat:"Peak Execution",  items:["Full mock race session: simulate the entire race day start to finish","Sustaining race pace for the full class duration (2 hrs)","Mental reset mid-race: if something goes wrong, refocus within 10 seconds","Consistent lap times: lap 3 within 10% of lap 1 is the target"] },
+  { phase:8, cat:"Hard-Enduro Terrain", items:["Sustained rocky climbs without losing momentum or stalling","Steep technical descents on loose mountain terrain, controlled","Talus / scree field traction and line reading","Off-camber traverses on exposed ground","Linking obstacles into flow rather than stopping at each one","Self-sufficiency: a trailside fix (mousse, lever, master link) done solo"] },
+  { phase:9, cat:"Bronze-Course Readiness", items:["2+ hours of continuous technical terrain without falling apart","Arm pump managed across a full Bronze-length effort","Endurocross-style obstacle confidence (logs, tires, k-rail)","A 4-hour Bronze simulation completed feeling strong","Race-day systems dialed: fuel, hydration, pacing on a mountain course"] },
+];
+
+// ─── TECHNICAL SKILLS LADDER (long-term, multi-year progression) ────────────
+var LADDER = [
+  { tier:"Foundational", color:"#22C55E", items:[
+    "Two-finger clutch — reflexive, never whole-hand",
+    "Two-finger front brake — reflexive",
+    "Attack / standing position held without thinking about it",
+    "Smooth progressive throttle — no on/off snapping",
+    "Slow-speed balance: figure-8s and a near track-stand",
+    "Controlled clutch-up on flat ground, rear brake covered",
+  ], note:"Your backyard Tuesday rides live here. The bar is reflexive and automatic — when it feels boring, you've got it." },
+  { tier:"Core Technical", color:"#3B82F6", items:[
+    "Log & obstacle crossings — poles scaling up to real logs",
+    "Pivot turns for tight switchbacks",
+    "Technical hill climbs: momentum, line choice, loose & stepped terrain",
+    "Steep descents: weight back, controlled braking, no death-grip",
+    "Hill restart after a mid-climb stall — no rollback, no loop-out",
+    "Rut & root traction: stay loose, let the bike move beneath you",
+    "Arm-pump management under race fatigue",
+  ], note:"This tier is what actually wins your C-class races. The hill restart especially — you WILL stall on a climb, and restarting calmly is worth more than any flashy move." },
+  { tier:"Intermediate", color:"#F59E0B", items:[
+    "Balance-point wheelie to clear obstacles and log piles",
+    "Zap / double-blip step-up: front onto a ledge, then drive the rear up",
+    "Rolling endo / front-wheel pivot to reposition",
+    "Trials-style rear-wheel hops for line correction",
+    "Bulldozing momentum through rock gardens and chunder",
+    "Stalled-restart on a genuinely steep pitch",
+  ], note:"Trials-derived obstacle vocabulary — roughly the Silver Kings Bronze-course level, where your 2027 goal lives. The zap is the real precursor to a splat." },
+  { tier:"Advanced — Trials / Extreme", color:"#EF4444", items:[
+    "Splat: throw the front at a bar-height-plus vertical face and lever up",
+    "Big zaps up near-vertical ledges and rock steps",
+    "Precision hopping to place the bike exactly where you need it",
+    "Committed climbs on extreme off-camber and loose verticals",
+    "Reading and linking obstacle sequences at extreme-enduro pace",
+  ], note:"The Erzberg vocabulary — years of riding away, and that's fine. This is the mountain you're climbing toward, one rung at a time." },
 ];
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
@@ -261,7 +402,7 @@ function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 // ─── RENDER: TIMELINE ───────────────────────────────────────────────────────
 function renderTimeline() {
   var cells = "";
-  for (var w = 1; w <= 20; w++) {
+  for (var w = 1; w <= TOTAL_WEEKS; w++) {
     var p = ph(w);
     var race = RACES.find(function(r){ return r.week === w; });
     var isSel = (w === sel), isCur = (w === cur);
@@ -274,13 +415,19 @@ function renderTimeline() {
         '<div class="tl-dot" style="background:' + (race ? race.color : "transparent") + '"></div>' +
       '</div>';
   }
-  var legend = "";
+  var bands = "";
   PHASES.forEach(function(p){
-    legend += '<span class="tl-leg"><span class="sw" style="background:' + p.color + '"></span>P' + p.id + ' ' + esc(p.name) + '</span>';
+    var n = p.weeks.length;
+    var width = n * 26 + (n - 1) * 3;   // match week-cell widths + gaps so bands align
+    var active = p.weeks.indexOf(cur) !== -1;
+    bands +=
+      '<div class="tl-band" data-action="selweek" data-week="' + p.weeks[0] + '" ' +
+        'style="width:' + width + 'px;background:' + p.color + (active ? "33" : "1c") + ';border:1px solid ' + p.color + (active ? "" : "55") + ';color:' + (active ? "#f0f0ec" : p.color) + '">' +
+        '<span>' + esc(p.name) + '</span>' +
+      '</div>';
   });
-  legend += '<span class="tl-leg"><span class="dotsw"></span>Race/Watch</span>';
   document.getElementById("timeline").innerHTML =
-    '<div class="tl-row">' + cells + '</div><div class="tl-legend">' + legend + '</div>';
+    '<div class="tl-row">' + cells + '</div><div class="tl-bandrow">' + bands + '</div>';
 }
 
 // ─── RENDER: TABS ───────────────────────────────────────────────────────────
@@ -367,7 +514,64 @@ function renderWeekView() {
 
 // ─── RENDER: SKILLS VIEW ────────────────────────────────────────────────────
 function renderSkillsView() {
-  var html = '<p style="font-size:12px;color:#555;margin-top:0;margin-bottom:14px;line-height:1.5">Check off each skill as you develop it on the bike. These track your progression toward mid-pack racing — work through each phase in order.</p>';
+  var html = "";
+
+  // ── Goals banner: the trajectory ──
+  function milestone(yr, yrColor, h, d) {
+    return '<div class="ms">' +
+      '<span class="yr" style="background:' + yrColor + '">' + yr + '</span>' +
+      '<div><div class="h">' + h + '</div><div class="d">' + d + '</div></div>' +
+    '</div>';
+  }
+  html += '<div class="goals">' +
+    '<div class="goals-t">THE TRAJECTORY</div>' +
+    milestone("2026", "#F04E00", "C class hare scrambles — mid-pack", "This program. Preston → Baker City → Tamarack.") +
+    milestone("2027", "#3B82F6", "Silver Kings — Bronze course, B class", "Step up to a Hard Enduro World Championship round in Kellogg.") +
+    milestone("SOMEDAY", "#EF4444", "Red Bull Erzbergrodeo, Austria", "The hardest hard enduro on earth. The north star.") +
+  '</div>';
+
+  // ── Technical Skills Ladder ──
+  var ladDone = 0, ladTotal = 0;
+  LADDER.forEach(function(t, ti){ t.items.forEach(function(_, i){ ladTotal++; if (getS("lad:" + ti + ":" + i)) ladDone++; }); });
+  var ladPct = ladTotal ? Math.round(ladDone / ladTotal * 100) : 0;
+
+  html += '<div class="sec-label">Technical Skills Ladder</div>';
+  html += '<p style="font-size:12px;color:#555;margin:-4px 0 12px;line-height:1.5">The full progression, fundamentals to Erzberg-grade. Each tier builds on the one below — get solid on a tier before you lean on the next.</p>';
+  html += '<div class="catrow"><div class="top">' +
+      '<div class="nm"><span style="font-size:12px;font-weight:700;color:#c4c4cc">Overall ladder</span></div>' +
+      '<span class="ct">' + ladDone + '/' + ladTotal + ' · ' + ladPct + '%</span>' +
+    '</div><div class="bar"><div data-width="' + ladPct + '" style="background:linear-gradient(90deg,#22C55E,#3B82F6,#F59E0B,#EF4444)"></div></div></div>';
+  html += '<div style="height:6px"></div>';
+
+  LADDER.forEach(function(t, ti){
+    var done = t.items.filter(function(_, i){ return getS("lad:" + ti + ":" + i); }).length;
+    var allDoneTier = done === t.items.length;
+    var prevComplete = ti === 0 || LADDER[ti - 1].items.every(function(_, i){ return getS("lad:" + (ti - 1) + ":" + i); });
+    var locked = !prevComplete && !allDoneTier;
+    html += '<div class="tier-card" style="border:1px solid ' + t.color + (locked ? "22" : "55") + ';opacity:' + (locked ? ".62" : "1") + '">' +
+      '<div class="tier-head">' +
+        '<div class="tier-name" style="color:' + (locked ? "#8a8a92" : "#f0f0ec") + '">' +
+          '<span class="tier-num" style="color:' + t.color + ';background:' + t.color + '1f">TIER ' + (ti + 1) + '</span>' +
+          esc(t.tier) + (allDoneTier ? ' <span style="font-size:10px;color:#22C55E;font-family:monospace">✓ DIALED</span>' : '') +
+        '</div>' +
+        '<span style="font-size:10px;color:' + (allDoneTier ? "#22C55E" : "#555") + ';font-family:monospace">' + done + '/' + t.items.length + '</span>' +
+      '</div>';
+    if (locked) html += '<div class="lock">🔒 Build Tier ' + ti + ' first — but tap anything you\'ve already got</div>';
+    t.items.forEach(function(item, i){
+      var dn = getS("lad:" + ti + ":" + i);
+      html += '<div class="row" data-action="check-skill" data-key="lad:' + ti + ':' + i + '">' +
+        '<div class="chk" style="border:1.5px solid ' + (dn ? t.color : "#353538") + ';background:' + (dn ? t.color : "transparent") + '">' +
+          (dn ? '<span class="tick">✓</span>' : "") + '</div>' +
+        '<span class="lbl" style="color:' + (dn ? "#444" : "#8a8a92") + ';text-decoration:' + (dn ? "line-through" : "none") + '">' + esc(item) + '</span>' +
+      '</div>';
+    });
+    html += '<div class="tier-note" style="background:' + t.color + '12;border-left:2px solid ' + t.color + '">' + esc(t.note) + '</div>';
+    html += '</div>';
+  });
+
+  // ── Race-specific skills (this season) ──
+  html += '<div class="sec-label" style="margin-top:20px">Race-Specific Skills · This Season</div>';
+  html += '<p style="font-size:12px;color:#555;margin:-4px 0 12px;line-height:1.5">Phase-by-phase skills tied to your 2026 program. Work through each phase in order.</p>';
   SKILLS.forEach(function(cat, ci){
     var p = PHASES[cat.phase - 1];
     var doneCount = cat.items.filter(function(_, i){ return getS("sk:" + ci + ":" + i); }).length;
@@ -439,7 +643,7 @@ function computeStats() {
   };
   function bucket(t){ return t === "rest" ? "rec" : t; }
   var trainDone = 0, trainTotal = 0;
-  for (var w = 1; w <= 20; w++) {
+  for (var w = 1; w <= TOTAL_WEEKS; w++) {
     for (var d = 0; d < 7; d++) {
       var day = getDay(w, d);
       if (day.t === "race" || day.t === "watch") continue; // no checkbox on event days
@@ -492,20 +696,29 @@ function renderHomeView() {
   var wtr = nextRace ? (nextRace.week - cur) : null;
   var s = computeStats();
   var allPct = pctOf(s.allDone, s.allTotal);
-  var weeksToTam = Math.max(20 - cur, 0);
+  var weeksToSK = Math.max(GOAL_WEEK - cur, 0);
+  var journeyPct = Math.round(Math.min(cur, GOAL_WEEK) / GOAL_WEEK * 100);
+  var ladDone = 0, ladTotal = 0;
+  LADDER.forEach(function(t, ti){ t.items.forEach(function(_, i){ ladTotal++; if (getS("lad:" + ti + ":" + i)) ladDone++; }); });
 
   // Hero card with overall ring
   var html = '<div class="hero">' +
     '<div class="hl">' + headline(allPct) + '</div>' +
-    '<div class="hl-sub">WEEK ' + cur + ' OF 20 · PHASE ' + curPhase.id + ': ' + esc(curPhase.name).toUpperCase() +
-      (weeksToTam > 0 ? ' · ' + weeksToTam + ' TO TAMARACK' : ' · RACE WEEK') + '</div>' +
+    '<div class="hl-sub">WEEK ' + cur + ' OF ' + TOTAL_WEEKS + ' · PHASE ' + curPhase.id + ': ' + esc(curPhase.name).toUpperCase() +
+      (weeksToSK > 0 ? ' · ' + weeksToSK + ' TO SILVER KINGS' : ' · RACE WEEK') + '</div>' +
     '<div class="ringwrap">' + ringSvg(allPct, curPhase.color) + '</div>' +
     '<div class="pills">' +
       '<span class="pill"><span class="pd" style="background:#F04E00"></span>Training <b>' + pctOf(s.trainDone, s.trainTotal) + '%</b></span>' +
       '<span class="pill"><span class="pd" style="background:#8B5CF6"></span>Skills <b>' + pctOf(s.skDone, s.skTotal) + '%</b></span>' +
       '<span class="pill"><span class="pd" style="background:#22C55E"></span>Race prep <b>' + pctOf(s.rpDone, s.rpTotal) + '%</b></span>' +
+      '<span class="pill"><span class="pd" style="background:#EF4444"></span>Ladder <b>' + pctOf(ladDone, ladTotal) + '%</b></span>' +
     '</div>' +
-    '<div class="count-line">' + s.allDone + ' of ' + s.allTotal + ' items complete</div>';
+    '<div class="count-line">' + s.allDone + ' of ' + s.allTotal + ' items complete</div>' +
+    '<div style="margin-top:14px">' +
+      '<div style="display:flex;justify-content:space-between;font-size:10px;color:#555;font-family:monospace;margin-bottom:5px"><span>ROAD TO SILVER KINGS</span><span>' + journeyPct + '%</span></div>' +
+      '<div class="bar" style="height:8px"><div data-width="' + journeyPct + '" style="background:linear-gradient(90deg,#3B82F6,#22C55E,#38BDF8,#84CC16,#D97706)"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:9px;color:#3a3a3e;font-family:monospace;margin-top:3px"><span>Jun 2026</span><span>Jun 2027</span></div>' +
+    '</div>';
   if (nextRace) {
     html += '<div class="nextchip">' +
       '<span style="font-size:11px;color:#555">Next:</span>' +
@@ -573,10 +786,10 @@ function renderView() {
   else if (tab === "skills") html = renderSkillsView();
   else if (tab === "races") html = renderRacesView();
   el.innerHTML = html;
-  if (tab === "home") animateHome();
+  animate();
 }
 
-function animateHome() {
+function animate() {
   requestAnimationFrame(function(){ requestAnimationFrame(function(){
     var el = document.getElementById("view");
     if (!el) return;
