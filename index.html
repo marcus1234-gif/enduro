@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Enduro Program">
+<meta name="theme-color" content="#111113">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<title>Enduro Racing Program</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #111113; color: #f0f0ec;
+    font-family: system-ui, -apple-system, sans-serif;
+    min-height: 100vh; padding-bottom: 40px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .header { padding: 16px 16px 0; }
+  .eyebrow { font-size: 10px; letter-spacing: .16em; color: #F04E00; font-weight: 700; text-transform: uppercase; font-family: monospace; margin-bottom: 2px; }
+  h1 { margin: 0; font-size: 21px; font-weight: 800; line-height: 1.1; }
+  .sub { margin: 3px 0 0; font-size: 11px; color: #444; }
+  .timeline { padding: 12px 16px 0; overflow-x: auto; }
+  .tl-row { display: flex; gap: 3px; min-width: max-content; }
+  .tl-cell { cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .tl-num { width: 26px; height: 26px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: monospace; font-weight: 700; transition: all .15s; }
+  .tl-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .tl-legend { display: flex; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+  .tl-leg { display: flex; align-items: center; gap: 4px; font-size: 10px; color: #555; font-family: monospace; }
+  .tl-leg .sw { display: inline-block; width: 7px; height: 7px; border-radius: 2px; }
+  .tl-leg .dotsw { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #EF4444; }
+  .tabs { display: flex; gap: 2px; padding: 12px 16px 0; border-bottom: 1px solid #1e1e21; }
+  .tab { padding: 7px 13px; border-radius: 7px 7px 0 0; border: none; cursor: pointer; font-size: 12px; font-weight: 600; background: transparent; color: #555; border-bottom: 2px solid transparent; }
+  .tab.active { background: #1a1a1d; color: #f0f0ec; border-bottom: 2px solid #F04E00; }
+  .view { padding: 16px; }
+  .daycard { border-radius: 10px; background: #1A1A1D; border: 1px solid #242428; margin-bottom: 7px; overflow: hidden; transition: border-color .2s; }
+  .dc-head { display: flex; align-items: center; gap: 9px; padding: 10px 12px; cursor: pointer; }
+  .dc-check { width: 17px; height: 17px; border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+  .dc-dayname { font-size: 11px; color: #444; font-family: monospace; width: 24px; flex-shrink: 0; }
+  .dc-badge { font-size: 9px; font-weight: 700; border-radius: 4px; padding: 2px 5px; flex-shrink: 0; letter-spacing: .05em; }
+  .dc-title { font-size: 13px; font-weight: 600; flex: 1; line-height: 1.3; }
+  .dc-caret { color: #333; font-size: 11px; }
+  .dc-body { padding: 0 12px 12px; border-top: 1px solid #242428; }
+  .dc-list { margin: 10px 0 0; padding: 0; list-style: none; }
+  .dc-li { font-size: 12px; color: #8a8a92; margin-bottom: 5px; display: flex; gap: 8px; line-height: 1.45; }
+  .dc-note { margin-top: 10px; padding: 8px 10px; border-radius: 0 6px 6px 0; }
+  .dc-note p { margin: 0; font-size: 11px; color: #a0a0a8; line-height: 1.5; font-style: italic; }
+  .tick { color: #fff; font-weight: 700; }
+  .chk { border-radius: 3px; width: 15px; height: 15px; flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center; }
+  .chk .tick { font-size: 9px; }
+  .row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; cursor: pointer; }
+  .row span.lbl { font-size: 12px; line-height: 1.45; }
+  .install-tip { margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: rgba(240,78,0,.08); border: 1px solid rgba(240,78,0,.25); }
+  .install-tip .t { font-size: 11px; font-weight: 700; color: #F04E00; letter-spacing: .08em; text-transform: uppercase; font-family: monospace; margin-bottom: 5px; }
+  .install-tip p { margin: 0; font-size: 12px; color: #9a9aa2; line-height: 1.5; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="eyebrow">Beta 300RR Race &middot; Boise National Forest</div>
+  <h1>Enduro Racing Program</h1>
+  <p class="sub">20 weeks &middot; Jun 8 &ndash; Oct 25, 2026 &middot; 3 races</p>
+</div>
+<div id="timeline" class="timeline"></div>
+<div id="tabs" class="tabs"></div>
+<div id="view" class="view"></div>
+
+<script>
+// ─── STORAGE (localStorage, fully offline) ──────────────────────────────────
+var STORE_KEY = "enduroProgramStore_v1";
+var store = {};
+try { store = JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch (e) { store = {}; }
+function getS(key) { return store[key] === true; }
+function setS(key, val) {
+  if (val) store[key] = true; else delete store[key];
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
+}
+
+// ─── PROGRAM CLOCK ──────────────────────────────────────────────────────────
+var PROG_START = new Date(2026, 5, 8); // Mon Jun 8
+function currentWeek() {
+  var days = Math.floor((Date.now() - PROG_START) / 86400000);
+  return Math.min(Math.max(Math.floor(days / 7) + 1, 1), 20);
+}
+
+// ─── DATA ───────────────────────────────────────────────────────────────────
+var PHASES = [
+  { id:1, weeks:[1,2,3,4],      name:"Foundation", color:"#3B82F6", tagline:"Build the engine. Fix the habits." },
+  { id:2, weeks:[5,6,7,8,9,10], name:"Build",       color:"#F59E0B", tagline:"Load the body. Push the limits." },
+  { id:3, weeks:[11,12],        name:"Race Prep",   color:"#F04E00", tagline:"Taper sharp. First start." },
+  { id:4, weeks:[13,14,15,16],  name:"Rebuild",     color:"#8B5CF6", tagline:"Race data in. Adjust and grow." },
+  { id:5, weeks:[17,18,19,20],  name:"Peak",        color:"#22C55E", tagline:"Arrive at Tamarack ready." },
+];
+function ph(w) { return PHASES.find(function(p){ return p.weeks.indexOf(w) !== -1; }); }
+
+var WK_DATES = [
+  "Jun 8–14","Jun 15–21","Jun 22–28","Jun 29–Jul 5",
+  "Jul 6–12","Jul 13–19","Jul 20–26","Jul 27–Aug 2",
+  "Aug 3–9","Aug 10–16","Aug 17–23","Aug 24–30",
+  "Aug 31–Sep 6","Sep 7–13","Sep 14–20","Sep 21–27",
+  "Sep 28–Oct 4","Oct 5–11","Oct 12–18","Oct 19–25",
+];
+var DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+
+var WT = {
+  mob:  { bg:"rgba(99,102,241,.15)",  border:"#6366F1", badge:"MOBILITY" },
+  str:  { bg:"rgba(59,130,246,.15)",  border:"#3B82F6", badge:"STRENGTH" },
+  z2:   { bg:"rgba(16,185,129,.15)",  border:"#10B981", badge:"ZONE 2"   },
+  hiit: { bg:"rgba(245,158,11,.15)",  border:"#F59E0B", badge:"HIIT"     },
+  ride: { bg:"rgba(240,78,0,.15)",    border:"#F04E00", badge:"RIDE"     },
+  race: { bg:"rgba(239,68,68,.2)",    border:"#EF4444", badge:"RACE"     },
+  watch:{ bg:"rgba(148,163,184,.12)", border:"#94a3b8", badge:"WATCH"    },
+  rec:  { bg:"rgba(75,85,99,.15)",    border:"#6B7280", badge:"RECOVERY" },
+  rest: { bg:"rgba(55,65,81,.1)",     border:"#374151", badge:"REST"     },
+};
+
+var TPL = {
+  1:[
+    { t:"mob",  h:"Mobility + 20 min walk",       b:["Hip flexor stretch 2×45s/side","90/90 hip rotation 2×10/side","Pigeon pose 2×45s/side","Thoracic rotation 2×10/side","20 min easy walk","Wrist and forearm circles"] },
+    { t:"str",  h:"Full Body Strength A",         b:["3×10 Goblet squat","3×10 Romanian deadlift","3×10 Push-ups","3×8 Bent-over row","2×30s Plank","2×15 Dead bug","3×15 Wrist curl + reverse curl"] },
+    { t:"z2",   h:"Zone 2 Cardio — 45 min",       b:["Bike, row, or easy jog — conversational pace","Nasal breathing: if you can't hold it, slow down","HR target 120–140 bpm","This builds your aerobic foundation — protect it"] },
+    { t:"str",  h:"Core + Forearm Circuit",       b:["3×30s Plank","3×12 Ab wheel rollout","3×10/side Side plank hip dip","3×15 Wrist curl (palms up)","3×15 Reverse wrist curl (palms down)","3×20s Dead hang","2× Farmer carry 20m/hand"] },
+    { t:"str",  h:"Full Body Strength B",         b:["3×10 Bulgarian split squat","3×10 Hip thrust","3×8 Pull-ups or lat pulldown","3×10 DB shoulder press","3×10 Face pulls","3×20s Dead hang","2×30s Hollow body hold"] },
+    { t:"ride", h:"Ride — Fundamentals Focus",    b:["2–3 hrs total riding time","Drill: slow-speed balance — figure 8s and slow straights","Two-finger clutch and brake every section","Attack position: elbows up, knees grip tank, weight centered","Cornering: look through the corner, let the body lead","No hero laps — this is skill work"], n:"If you catch yourself reverting to whole-hand clutch, stop, reset, and restart that section." },
+    { t:"rec",  h:"Active Recovery",              b:["30 min easy walk or swim","Full stretch: quads, hip flexors, hamstrings, calves, shoulders","Foam roll: thoracic spine, IT band, hip flexors","Hydrate well — elevation riding dehydrates fast"] },
+  ],
+  2:[
+    { t:"mob",  h:"Mobility — 25 min",            b:["Hip flexor + pigeon pose 2×45s/side","Thoracic rotation 2×10/side","Band shoulder stretches","Ankle mobility","Wrist and forearm stretches"] },
+    { t:"str",  h:"Lower Body + Core",            b:["4×6–8 Back squat (heavier than Phase 1)","4×8 Romanian deadlift","3×10 Walking lunges with weight","3×12 Hip thrust","3×12 Copenhagen side plank","3×30s Hollow body hold","2×15 Pallof press (anti-rotation)"] },
+    { t:"z2",   h:"Zone 2 — 60 min",              b:["60 min easy effort — cycling preferred (lower impact)","Trail running excellent for terrain specificity","HR 125–145 bpm, nasal breathing","Biggest fitness return in the program — don't skip it"] },
+    { t:"hiit", h:"HIIT + Grip Strength",         b:["5 min warm-up jog","8 rounds: 40s max effort / 20s rest (burpees, squat jumps, mountain climbers)","5 min active recovery walk","Grip circuit: 3×30s tennis ball squeezes, 3×20s dead hang, 3×15 wrist roller"] },
+    { t:"str",  h:"Upper Body + Pull Focus",      b:["4×6–8 Weighted pull-ups or lat pulldown","4×8 Bent-over row","3×10 Archer or decline push-ups","3×12 Face pulls","3×20 Wrist curl + reverse curl","3×30s Dead hang","2×15 Farmer carry (heavier load)"] },
+    { t:"ride", h:"Ride — Technical + Pace",      b:["3 hrs total","20 min easy warm-up","30–45 min sustained riding at ~70% effort","Skill focus: rocky terrain, steep climbs, switchbacks","Track arm pump — note when it starts and what triggers it"], n:"Time yourself on a familiar climb. This is your baseline. You'll beat it by Phase 5." },
+    { t:"rec",  h:"Recovery or Easy Second Ride", b:["Option A: 30 min walk + stretch + foam roll","Option B: Easy 2-hr ride at Zone 2 pace only — no pushing","If riding: this is active recovery, not training","You trained hard this week — recover hard too"] },
+  ],
+  3:[
+    { t:"mob",  h:"Easy Mobility — 20 min",       b:["Light full-body stretch only","Hip flexors, hamstrings, shoulders","Nothing aggressive — arrive at race day fresh"] },
+    { t:"str",  h:"Maintenance Strength — Light", b:["3×8 Squat at 60% of Phase 2 weight","3×8 Pull-ups","3×8 Push-ups","3×15 Wrist curl + 3×20s dead hang","No failure sets — no soreness"] },
+    { t:"z2",   h:"Easy Zone 2 — 30 min",         b:["30 min easy cycling or walk","HR 115–130 bpm","Just keep moving — don't tire yourself","Race is close"] },
+    { t:"hiit", h:"Short Activation + Viz",       b:["4 rounds: 30s on / 30s off (light HIIT)","Grip: 2×20s dead hang, 2×15 wrist curls","10 min race visualization: your start, your pace, your finish","Confirm logistics: AMA card, SIDRA membership, pre-entry complete"] },
+    { t:"rest", h:"Rest + Bike Prep",             b:["Full bike inspection — every bolt, every fluid","Petcock function verified","Fluids: coolant, brake, clutch, 2T oil at 60:1","Spare kit: master link, zip ties, inline fuses, patch kit, multitool","Pre-stage all gear: helmet, boots, jersey, knee pads, hydration pack"] },
+    { t:"race", h:"RACE DAY",                     b:["Arrive 60 min before class start","Walk first section of course if open","Warm up on the bike 10–15 min","C class: goal is to finish, not to win","Pace yourself — lap 1 is not the time to be a hero","Eat and drink before you feel you need to"] },
+    { t:"race", h:"Race Day 2 / Debrief",         b:["Race or pack up per format","Post-race questions: arms, legs, or lungs — which failed first?","Note where you lost the most time","Eat a real meal, hydrate, stretch","This is your most important training data of the entire program"] },
+  ],
+  4:[
+    { t:"rec",  h:"Post-Race Mobility",           b:["Easy full-body stretch","Focus on what's sore: hip flexors, forearms, neck, lower back","Foam roll thoroughly","Recovery is training — don't skip this"] },
+    { t:"str",  h:"Strength — Back to Build",     b:["Return to Phase 2 Strength A","If forearms were the race limiter: +2 extra dead hang sets","If legs failed: +2 extra split squat sets","Be honest about what the race told you"] },
+    { t:"z2",   h:"Zone 2 — 60 min",              b:["60 min easy effort","Use this time to mentally debrief the race","What lines cost you time? What positions caused fatigue?","Zone 2 is thinking time"] },
+    { t:"hiit", h:"HIIT + Race Weak Spot Work",   b:["6–8 rounds 40s on / 20s off","If arm pump was the race limiter: replace 1 HIIT round with dead hang circuit","If cardio failed: add 2 rounds to HIIT","If starts were rough: add 5× sprint starts (20m explosive runs)"] },
+    { t:"str",  h:"Strength B + Adjustment",      b:["Phase 2 Strength B template","Adjust based on race limiter","Progressive: slightly heavier than last Phase 2 cycle","Grip priority: 4×30s dead hang if arm pump was race issue"] },
+    { t:"ride", h:"Ride — Target Weakness",       b:["3 hrs total","30 min easy reactivation","Spend deliberate time on race's hardest sections","Rocky climbs? Arm pump on straights? Switchbacks?","Finish with 20 min sustained race-pace effort"], n:"The race gave you your real curriculum. Now train that specific weakness." },
+    { t:"rec",  h:"Active Recovery",              b:["30 min walk","Stretch + foam roll","Review race notes or results","Update your goal for the next race"] },
+  ],
+  5:[
+    { t:"mob",  h:"Mobility — 20 min",            b:["Maintenance stretch: hips, thoracic, forearms","Keep short — body needs recovery at peak load"] },
+    { t:"str",  h:"Peak Strength — High Effort",  b:["4×5–6 Back squat (near-max this cycle)","4×5–6 Romanian deadlift","4×6–8 Weighted pull-ups","3×8 Push-ups","4×25s Dead hang — highest grip volume yet"] },
+    { t:"z2",   h:"Zone 2 — 60 min",              b:["Last big Zone 2 block before taper","60 min cycling or trail run","Maintain pace, don't push into Zone 3","Trust the 17 weeks of work behind this session"] },
+    { t:"hiit", h:"Peak HIIT — 10 Rounds",        b:["10 rounds 40s on / 20s off (full effort)","Mix: burpees, squat jumps, KB swings, mountain climbers","Grip: 4×30s dead hang, 3×20 wrist roller","Highest HIIT volume in the program"] },
+    { t:"str",  h:"Peak Upper Body",              b:["4×6–8 Weighted pull-ups","4×8 Heavy bent-over row","3×10 Push variation","3×12 Face pulls","4×30s Dead hang — last heavy grip session before taper"] },
+    { t:"ride", h:"Ride — Full Mock Race",        b:["4 hrs total","15 min warm-up","45–60 min race-pace lap — treat it exactly like race day","Short break, then second 30 min push","Cool down","You are now as fit as you have ever been on a dirt bike"], n:"Dry run the whole Tamarack day: same pre-ride food, same routine, same gear check. Simulate it completely." },
+    { t:"rec",  h:"Active Recovery",              b:["30 min walk, full stretch, foam roll","You've done the work.","Taper begins next week."] },
+  ],
+};
+
+var OVR = {
+  2: {
+    3: { t:"watch", h:"🏁 Silver Kings — Arrive + Day 1", b:["Drive to Kellogg, ID (3.5 hrs from Boise)","Thursday practice day — watch course inspection and prologue","FIM Hard Enduro World Championship round","Study every body position and line you see","Talk to riders in the pits — the community is open"], n:"Don't enter. You're here to learn what you're training toward." },
+    4: { t:"watch", h:"Silver Kings — Main Race Day",     b:["Full day spectating at Silver Mountain","Watch Bronze course — that's your trajectory","Gondola access to upper sections of the course","List 3 specific skills you want to develop after watching"] },
+    5: { t:"watch", h:"Silver Kings — Final Day / Drive Home", b:["Watch final racing","Drive home — good mental debrief time","Write down the 3 skills you identified yesterday","These become Phase 2 ride focuses"] },
+  },
+  11:{
+    3: { t:"hiit", h:"Activation + Race Viz",             b:["Light: 4 rounds 30s on / 30s off","10 min visualization: your start, first lap, pace management","Confirm Race 1 logistics: AMA card, SIDRA membership, pre-entry done","Pack spare kit tonight: master link, zip ties, fuses, multitool"] },
+  },
+  12:{
+    4: { t:"rest", h:"Rest + Full Race Prep",             b:["Complete bike inspection — every bolt, every fluid","Petcock function verified (!!)","Fluids: coolant, brake, clutch, 2T at 60:1","Spare kit packed: master link, zip ties, patch, inline fuses, multitool","All gear pre-staged: helmet, boots, jersey, knee pads, back protector","AMA card + SIDRA membership ready (print or digital)","Truck/trailer loaded tonight — nothing rushed in the morning"] },
+    5: { t:"race", h:"🏁 RACE 1 — SIDRA Grassroots, Preston ID", b:["Arrive 60 min before class start","Walk first section of course if open","Warm up on the bike 10–15 min before start","C class: goal is to finish — consistent pace beats hero speed","Eat and drink before you feel you need to","First race: you're collecting data, not a trophy"] },
+    6: { t:"race", h:"Race Day 2 / Debrief",              b:["Race or pack up per event format","Post-race: arms, legs, or lungs — which was the #1 limiter?","Where did you lose the most time between laps?","Photo the results sheet — note your gap to mid-pack","That gap is your Phase 4 training target"] },
+  },
+  14:{
+    4: { t:"rest", h:"Rest + Race Prep",                  b:["Repeat Race 1 bike checklist — fill any gaps you found","What did Race 1 reveal about your spare kit?","Mental review: how will you apply Race 1 lessons tomorrow?"] },
+    5: { t:"race", h:"🏁 RACE 2 — SIDRA Elk Horn, Baker City OR", b:["You know the format — more confident start than Race 1","Goal: finish closer to mid-pack than Preston","Focus specifically on Race 1's weak section","Mid-race pacing: can you hold lap 1 pace for the full race?","If arm pump was the Race 1 limiter: consciously relax grip on every straight"] },
+    6: { t:"race", h:"Race Day 2 / Recovery",             b:["Race or recover per format","Compare your gap to mid-pack vs. Grassroots","Two races of data now: what's the consistent limiter?","This data shapes your final Phase 5 training emphasis"] },
+  },
+  19:{
+    0: { t:"mob",  h:"Taper — Light Mobility Only",       b:["Gentle 20 min full-body stretch","Nothing aggressive","You are tapering — trust the training"] },
+    1: { t:"str",  h:"Maintenance Strength — 50%",        b:["3×8 Squat at 50% of peak weight","3×8 Pull-ups","3×15 Wrist curl + 3×20s dead hang","Nothing to failure — arrive at Tamarack physically fresh"] },
+    2: { t:"z2",   h:"Easy Zone 2 — 30 min",              b:["30 min easy spin or walk — very easy","HR under 130","Taper is real, honor it"] },
+    3: { t:"mob",  h:"Activation + Final Visualization",  b:["Full mobility session — hips, thoracic, forearms","4 round light activation: squat jumps, push-ups, pull-ups, dead hang","15 min race visualization: your start, first lap, full race, finish line","Tamarack is 6 days away"] },
+    4: { t:"rest", h:"Rest + Full Pre-Race Bike Prep",    b:["Complete Tamarack bike prep — every fluid, every bolt","Everything from Race 1 and 2 checklists","Load truck or trailer tonight"] },
+    5: { t:"ride", h:"Shakedown Ride — Taper Easy",       b:["90 min max on familiar trail at easy pace","Confirm bike and body both feel good","No hard efforts whatsoever","Petcock check, brake check, everything working"] },
+    6: { t:"rec",  h:"Rest + Light Stretch",              b:["30 min easy walk","Full stretch","Carb-load lightly tonight","Race is one week away"] },
+  },
+  20:{
+    0: { t:"rest", h:"Full Rest",                         b:["No training","Eat well, begin light carb-loading","Finalize travel plan and race entry paperwork"] },
+    1: { t:"mob",  h:"Gentle Mobility Only — 20 min",     b:["Very light stretch only","Hip flexors, hamstrings, shoulders, forearms","Nothing that causes any soreness"] },
+    2: { t:"rest", h:"Rest",                              b:["30 min walk if restless","Bike loaded and ready","Sleep and eat well"] },
+    3: { t:"rest", h:"Travel to Tamarack",                b:["Drive to Tamarack Resort, ID (~1.5 hrs from Boise)","Check in, walk the venue on foot","Light stretch after the drive, early night","Race paperwork confirmed: AMA card, SIDRA membership, pre-entry"] },
+    4: { t:"rest", h:"Course Recon + Rest",               b:["Short course recon ride if permitted (20 min max, easy pace)","Do not tire yourself — arriving fresh matters more than scouting","Good dinner, early night","All gear laid out for race morning"] },
+    5: { t:"race", h:"🏁 RACE 3 — SIDRA / WHS Tamarack Resort, ID", b:["This is the one. 20 weeks of work brought you here.","AMA West Hare Scrambles co-sanction — bigger, more competitive field","Arrive 75 min before class start, warm up 15 min on the bike","Your race start is dialed — you've done this twice before","Goal: mid-pack in class","Stay smooth. Stay consistent. Trust the training."] },
+    6: { t:"race", h:"Race Day 2 / Celebrate",            b:["Race or recovery depending on event format","Compare your finishing position to your 20-week starting point","You've completed a full training cycle and three races","This is the beginning — not the end."] },
+  },
+};
+
+function getDay(w, d) {
+  var pid = (ph(w) && ph(w).id) || 1;
+  var base = (TPL[pid] && TPL[pid][d]) || { t:"rest", h:"Rest", b:["Full rest — you've earned it"] };
+  return (OVR[w] && OVR[w][d]) || base;
+}
+
+var RACES = [
+  { week:2,  type:"WATCH",   name:"Silver Kings Hard Enduro",   date:"Jun 18–20", loc:"Kellogg, ID",         color:"#94a3b8", goal:"Spectate only. FIM World Championship in your backyard. Study the Bronze course — that's your future.", prep:["Book accommodation in Kellogg (3.5 hrs from Boise)","Buy spectator access at silvermt.com","Bring a notebook — study body positions and lines","Talk to riders in the pits: open community","Identify 3 skills you want to develop after watching the pros"] },
+  { week:12, type:"RACE #1", name:"SIDRA Grassroots",           date:"Aug 29–30",  loc:"Preston, ID",         color:"#F04E00", goal:"Finish the race. C class. Your goal is to learn the format — starts, pacing, course reading.", prep:["Join AMA ($49/yr) at americanmotorcyclist.com","Join SIDRA at sidraracing.org","Complete online pre-entry before the event","AMA card ready: digital or printed","Spare kit: master link, 2× zip ties, inline fuses, patch kit, multitool","Hydration pack stocked for 2-hr effort","Petcock verified (!), all fluids fresh","Goal: finish and record your gap to mid-pack"] },
+  { week:14, type:"RACE #2", name:"SIDRA Elk Horn",             date:"Sep 12–13",  loc:"Baker City, OR",      color:"#8B5CF6", goal:"Apply Race 1 lessons. Finish closer to mid-pack than Preston.", prep:["Same checklist as Race 1","Add anything that was missing at Grassroots","Set a lap-time target based on Race 1 result","Write a pacing plan for laps 2 and 3","If arm pump was Race 1 limiter: add a relaxation cue note on bar pad"] },
+  { week:20, type:"RACE #3", name:"SIDRA / WHS Tamarack",       date:"Oct 24–25",  loc:"Tamarack Resort, ID", color:"#22C55E", goal:"Mid-pack finish in C class. This is what 20 weeks of training is for.", prep:["SIDRA + AMA memberships current","Pre-entry complete for both SIDRA and WHS co-sanction","Drive to Tamarack (~1.5 hrs from Boise) Thu/Fri","Course recon ride Friday if permitted (20 min easy)","Full bike prep completed Thursday","Carb-load lightly Mon–Thu","Arrive race morning 75 min early","Target: finish within 10% of class leader time"] },
+];
+
+var SKILLS = [
+  { phase:1, cat:"Body Position",   items:["Attack position: elbows up, knees grip tank, weight centered over footpegs","Standing position: balls of feet on pegs, slight knee bend, loose arms","Two-finger clutch control — not whole-hand grip","Two-finger front brake technique (not whole-hand)","Smooth throttle: progressive roll-on/off, no snapping"] },
+  { phase:1, cat:"Basic Technical", items:["Slow-speed balance: figure 8s and near-stationary straight balance","Log crossings: momentum commitment + weight shift rearward","Basic cornering: look through corner, body leads bike into lean","Rut navigation: look further ahead, relax arms, let bike move beneath you"] },
+  { phase:2, cat:"Technical Terrain", items:["Rocky climbs: commit to momentum, clutch slip on steep technical pitches","Technical descents: weight back, two fingers covering brake, no death-grip","Switchbacks: wide entry → apex with inside peg weighted → wide exit","Loose over hard: keep front wheel light, weight rearward","Sidehill traversing: uphill peg weighted, eyes far ahead"] },
+  { phase:2, cat:"Pace + Fitness",  items:["30 min sustained riding at race pace without arm pump shutting you down","Controlled breathing during effort: belly breaths on straight sections","Heart rate management: back off before redline, not after","Grip relaxation on low-risk sections to reset forearms mid-ride"] },
+  { phase:3, cat:"Race Craft",      items:["Hare scramble row start: smooth launch, don't spin the rear wheel","First lap pacing: resist racing everyone off the line — find your own pace","Course marking: read arrows confidently, plan next gate while on current","Passing: announce yourself, wait for a safe section, clean pass only","Being passed: hold your line, let faster riders through cleanly"] },
+  { phase:4, cat:"Race Refinement", items:["Identify your personal limiting factor (arms, lungs, or technique — be honest)","Adjust line selection based on traffic and fatigue level mid-race","Fuel and hydration timing: eat and drink before you feel you need to","Reading mid-race fatigue and compensating with better technique, not more effort"] },
+  { phase:5, cat:"Peak Execution",  items:["Full mock race session: simulate the entire race day start to finish","Sustaining race pace for the full class duration (2 hrs)","Mental reset mid-race: if something goes wrong, refocus within 10 seconds","Consistent lap times: lap 3 within 10% of lap 1 is the target"] },
+];
+
+// ─── STATE ──────────────────────────────────────────────────────────────────
+var cur = currentWeek();
+var sel = cur;
+var tab = "week";
+var openDays = {}; // key "week:index" -> bool
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// ─── RENDER: TIMELINE ───────────────────────────────────────────────────────
+function renderTimeline() {
+  var cells = "";
+  for (var w = 1; w <= 20; w++) {
+    var p = ph(w);
+    var race = RACES.find(function(r){ return r.week === w; });
+    var isSel = (w === sel), isCur = (w === cur);
+    var border = isCur ? ("2px solid " + p.color) : isSel ? ("2px solid " + p.color) : ("1px solid " + p.color + "45");
+    var bg = isSel ? p.color : (p.color + "28");
+    var col = isSel ? "#fff" : p.color;
+    cells +=
+      '<div class="tl-cell" data-action="selweek" data-week="' + w + '">' +
+        '<div class="tl-num" style="background:' + bg + ';border:' + border + ';color:' + col + '">' + w + '</div>' +
+        '<div class="tl-dot" style="background:' + (race ? race.color : "transparent") + '"></div>' +
+      '</div>';
+  }
+  var legend = "";
+  PHASES.forEach(function(p){
+    legend += '<span class="tl-leg"><span class="sw" style="background:' + p.color + '"></span>P' + p.id + ' ' + esc(p.name) + '</span>';
+  });
+  legend += '<span class="tl-leg"><span class="dotsw"></span>Race/Watch</span>';
+  document.getElementById("timeline").innerHTML =
+    '<div class="tl-row">' + cells + '</div><div class="tl-legend">' + legend + '</div>';
+}
+
+// ─── RENDER: TABS ───────────────────────────────────────────────────────────
+function renderTabs() {
+  var defs = [
+    { id:"overview", label:"Overview" },
+    { id:"week",     label:"Week " + sel },
+    { id:"skills",   label:"Skills" },
+    { id:"races",    label:"Races" },
+  ];
+  var html = "";
+  defs.forEach(function(t){
+    html += '<button class="tab' + (tab === t.id ? " active" : "") + '" data-action="tab" data-tab="' + t.id + '">' + esc(t.label) + '</button>';
+  });
+  document.getElementById("tabs").innerHTML = html;
+}
+
+// ─── RENDER: WEEK VIEW ──────────────────────────────────────────────────────
+function dayCardHtml(w, di, day, checked) {
+  var wt = WT[day.t] || WT.rest;
+  var isEvent = (day.t === "race" || day.t === "watch");
+  var open = !!openDays[w + ":" + di];
+  var checkbox = "";
+  if (!isEvent) {
+    checkbox =
+      '<div class="dc-check" data-action="check-day" data-i="' + di + '" ' +
+      'style="border:1.5px solid ' + (checked ? wt.border : "#3a3a3d") + ';background:' + (checked ? wt.border : "transparent") + '">' +
+      (checked ? '<span class="tick" style="font-size:10px">✓</span>' : "") + '</div>';
+  }
+  var titleStyle = "color:" + (checked ? "#555" : "#d4d4dc") + ";text-decoration:" + (checked ? "line-through" : "none");
+  var body = "";
+  if (open) {
+    var lis = "";
+    day.b.forEach(function(item){
+      lis += '<li class="dc-li"><span style="color:' + wt.border + ';flex-shrink:0">›</span>' + esc(item) + '</li>';
+    });
+    var note = day.n
+      ? '<div class="dc-note" style="background:' + wt.bg + ';border-left:2px solid ' + wt.border + '"><p>' + esc(day.n) + '</p></div>'
+      : "";
+    body = '<div class="dc-body"><ul class="dc-list">' + lis + '</ul>' + note + '</div>';
+  }
+  return '<div class="daycard" style="border-color:' + (open ? wt.border : "#242428") + '">' +
+    '<div class="dc-head" data-action="toggle-day" data-key="' + w + ':' + di + '">' +
+      checkbox +
+      '<span class="dc-dayname">' + DAYS[di] + '</span>' +
+      '<span class="dc-badge" style="color:' + wt.border + ';background:' + wt.bg + '">' + wt.badge + '</span>' +
+      '<span class="dc-title" style="' + titleStyle + '">' + esc(day.h) + '</span>' +
+      '<span class="dc-caret">' + (open ? "▲" : "▼") + '</span>' +
+    '</div>' + body + '</div>';
+}
+
+function renderWeekView() {
+  var phase = ph(sel);
+  var race = RACES.find(function(r){ return r.week === sel; });
+  var days = [];
+  for (var i = 0; i < 7; i++) days.push(getDay(sel, i));
+  function checked(i){ return getS("d:" + sel + ":" + i); }
+  var trainDays = days.filter(function(d){ return d.t !== "race" && d.t !== "watch"; }).length;
+  var doneCount = 0;
+  for (var j = 0; j < 7; j++) if (checked(j)) doneCount++;
+  var pct = trainDays ? (doneCount / trainDays * 100) : 0;
+
+  var html = "";
+  html += '<div style="margin-bottom:14px">' +
+    '<div style="font-size:10px;font-weight:700;color:' + phase.color + ';text-transform:uppercase;letter-spacing:.12em;font-family:monospace;margin-bottom:3px">Week ' + sel + ' · Phase ' + phase.id + ': ' + esc(phase.name) + '</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<span style="font-size:12px;color:#555">' + WK_DATES[sel - 1] + '</span>' +
+      '<span style="font-size:11px;color:' + (doneCount === trainDays ? "#22C55E" : "#555") + ';font-family:monospace">' + doneCount + '/' + trainDays + ' done</span>' +
+    '</div>' +
+    '<div style="height:3px;background:#242428;border-radius:2px;margin-top:6px">' +
+      '<div style="height:100%;width:' + pct + '%;background:' + phase.color + ';border-radius:2px;transition:width .3s"></div>' +
+    '</div></div>';
+
+  if (race) {
+    html += '<div style="padding:10px 12px;border-radius:8px;background:' + race.color + '14;border:1px solid ' + race.color + '45;margin-bottom:12px">' +
+      '<span style="font-size:10px;font-weight:700;color:' + race.color + ';letter-spacing:.1em">' + race.type + ' · THIS WEEK</span>' +
+      '<p style="margin:2px 0 0;font-size:13px;color:#d4d4dc;font-weight:600">' + esc(race.name) + ' · ' + race.date + '</p>' +
+      '<p style="margin:2px 0 0;font-size:11px;color:#888">' + esc(race.loc) + ' · ' + esc(race.goal) + '</p>' +
+    '</div>';
+  }
+  for (var k = 0; k < 7; k++) html += dayCardHtml(sel, k, days[k], checked(k));
+  return html;
+}
+
+// ─── RENDER: SKILLS VIEW ────────────────────────────────────────────────────
+function renderSkillsView() {
+  var html = '<p style="font-size:12px;color:#555;margin-top:0;margin-bottom:14px;line-height:1.5">Check off each skill as you develop it on the bike. These track your progression toward mid-pack racing — work through each phase in order.</p>';
+  SKILLS.forEach(function(cat, ci){
+    var p = PHASES[cat.phase - 1];
+    var doneCount = cat.items.filter(function(_, i){ return getS("sk:" + ci + ":" + i); }).length;
+    html += '<div style="margin-bottom:12px;padding:12px;border-radius:10px;background:#1a1a1d;border:1px solid #252528">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">' +
+        '<div style="display:flex;align-items:center;gap:7px">' +
+          '<div style="width:8px;height:8px;border-radius:2px;background:' + p.color + '"></div>' +
+          '<span style="font-size:12px;font-weight:700;color:#d4d4dc">' + esc(cat.cat) + '</span>' +
+          '<span style="font-size:9px;color:' + p.color + ';font-family:monospace">Phase ' + cat.phase + '</span>' +
+        '</div>' +
+        '<span style="font-size:10px;color:' + (doneCount === cat.items.length ? "#22C55E" : "#444") + ';font-family:monospace">' + doneCount + '/' + cat.items.length + '</span>' +
+      '</div>';
+    cat.items.forEach(function(skill, i){
+      var done = getS("sk:" + ci + ":" + i);
+      html += '<div class="row" data-action="check-skill" data-key="sk:' + ci + ':' + i + '">' +
+        '<div class="chk" style="border:1.5px solid ' + (done ? p.color : "#353538") + ';background:' + (done ? p.color : "transparent") + '">' +
+          (done ? '<span class="tick">✓</span>' : "") + '</div>' +
+        '<span class="lbl" style="color:' + (done ? "#444" : "#8a8a92") + ';text-decoration:' + (done ? "line-through" : "none") + '">' + esc(skill) + '</span>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+  return html;
+}
+
+// ─── RENDER: RACES VIEW ─────────────────────────────────────────────────────
+function renderRacesView() {
+  var html = "";
+  RACES.forEach(function(r){
+    var doneCount = r.prep.filter(function(_, i){ return getS("rp:" + r.week + ":" + i); }).length;
+    html += '<div style="margin-bottom:14px;border-radius:12px;background:#1a1a1d;border:1px solid ' + r.color + '35;overflow:hidden">' +
+      '<div style="padding:12px 14px;background:' + r.color + '10;border-bottom:1px solid ' + r.color + '25">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center">' +
+          '<span style="font-size:10px;font-weight:700;color:' + r.color + ';letter-spacing:.1em;font-family:monospace">' + r.type + ' · Week ' + r.week + '</span>' +
+          '<span style="font-size:11px;color:#666">' + r.date + '</span>' +
+        '</div>' +
+        '<div style="font-size:15px;font-weight:700;color:#f0f0ec;margin-top:2px">' + esc(r.name) + '</div>' +
+        '<div style="font-size:11px;color:#777;margin-top:1px">' + esc(r.loc) + '</div>' +
+        '<div style="font-size:12px;color:#999;margin-top:6px;font-style:italic;line-height:1.4">' + esc(r.goal) + '</div>' +
+      '</div>' +
+      '<div style="padding:12px 14px">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:8px">' +
+          '<span style="font-size:11px;color:#555">Prep checklist</span>' +
+          '<span style="font-size:10px;color:' + (doneCount === r.prep.length ? "#22C55E" : "#444") + ';font-family:monospace">' + doneCount + '/' + r.prep.length + '</span>' +
+        '</div>';
+    r.prep.forEach(function(item, i){
+      var done = getS("rp:" + r.week + ":" + i);
+      html += '<div class="row" data-action="check-prep" data-key="rp:' + r.week + ':' + i + '">' +
+        '<div class="chk" style="border:1.5px solid ' + (done ? r.color : "#353538") + ';background:' + (done ? r.color : "transparent") + '">' +
+          (done ? '<span class="tick">✓</span>' : "") + '</div>' +
+        '<span class="lbl" style="color:' + (done ? "#444" : "#8a8a92") + ';text-decoration:' + (done ? "line-through" : "none") + '">' + esc(item) + '</span>' +
+      '</div>';
+    });
+    html += '</div></div>';
+  });
+  return html;
+}
+
+// ─── RENDER: OVERVIEW VIEW ──────────────────────────────────────────────────
+function renderOverviewView() {
+  var nextRace = RACES.find(function(r){ return r.week >= cur; });
+  var curPhase = ph(cur);
+  var wtr = nextRace ? (nextRace.week - cur) : null;
+
+  var html = '<div style="padding:14px;border-radius:12px;background:' + curPhase.color + '10;border:1px solid ' + curPhase.color + '30;margin-bottom:16px">' +
+    '<div style="font-size:10px;color:' + curPhase.color + ';font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-family:monospace;margin-bottom:3px">Now · Week ' + cur + ' of 20</div>' +
+    '<div style="font-size:19px;font-weight:800;color:#f0f0ec">Phase ' + curPhase.id + ': ' + esc(curPhase.name) + '</div>' +
+    '<div style="font-size:13px;color:#888;font-style:italic;margin-top:2px">' + esc(curPhase.tagline) + '</div>';
+  if (nextRace) {
+    html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid ' + curPhase.color + '20;display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+      '<span style="font-size:11px;color:#555">Next:</span>' +
+      '<span style="font-size:11px;font-weight:700;color:' + nextRace.color + '">' + esc(nextRace.name) + ' · ' + nextRace.date + '</span>' +
+      '<span style="font-size:11px;color:#444">' + (wtr === 0 ? "← THIS WEEK" : (wtr + " week" + (wtr > 1 ? "s" : "") + " away")) + '</span>' +
+    '</div>';
+  }
+  html += '</div>';
+
+  html += '<div style="font-size:11px;color:#333;text-transform:uppercase;letter-spacing:.12em;font-family:monospace;margin-bottom:10px">Program Arc</div>';
+  PHASES.forEach(function(p){
+    var isActive = p.weeks.indexOf(cur) !== -1;
+    var isDone = Math.max.apply(null, p.weeks) < cur;
+    var pRaces = RACES.filter(function(r){ return p.weeks.indexOf(r.week) !== -1; });
+    html += '<div data-action="selweek" data-week="' + p.weeks[0] + '" style="padding:12px;border-radius:10px;background:' + (isActive ? "#1e1e22" : "#151517") + ';border:1px solid ' + (isActive ? p.color : "#222226") + ';margin-bottom:8px;cursor:pointer;opacity:' + (isDone ? ".55" : "1") + '">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div style="width:9px;height:9px;border-radius:2px;background:' + p.color + '"></div>' +
+          '<span style="font-size:13px;font-weight:700;color:' + (isActive ? "#f0f0ec" : "#777") + '">Phase ' + p.id + ': ' + esc(p.name) + '</span>' +
+          (isDone ? '<span style="font-size:9px;color:#22C55E;font-family:monospace">DONE</span>' : "") +
+          (isActive ? '<span style="font-size:9px;color:' + p.color + ';font-family:monospace">← YOU ARE HERE</span>' : "") +
+        '</div>' +
+        '<span style="font-size:10px;color:#444;font-family:monospace">Wk ' + p.weeks[0] + '–' + p.weeks[p.weeks.length - 1] + '</span>' +
+      '</div>' +
+      '<div style="font-size:11px;color:#555;font-style:italic;margin-bottom:' + (pRaces.length ? "7px" : "0") + '">' + esc(p.tagline) + '</div>';
+    pRaces.forEach(function(r){
+      html += '<div style="display:flex;align-items:center;gap:6px">' +
+        '<div style="width:5px;height:5px;border-radius:50%;background:' + r.color + '"></div>' +
+        '<span style="font-size:11px;font-weight:700;color:' + r.color + '">' + r.type + ': ' + esc(r.name) + '</span>' +
+        '<span style="font-size:11px;color:#444">· ' + r.date + '</span>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+
+  html += '<div class="install-tip">' +
+    '<div class="t">Offline app</div>' +
+    '<p>This runs entirely on your phone — no signal needed on the trail. Your checkboxes save to this device. To keep an icon handy, add it to your home screen from Safari.</p>' +
+  '</div>';
+  return html;
+}
+
+// ─── RENDER DISPATCH ────────────────────────────────────────────────────────
+function renderView() {
+  var el = document.getElementById("view");
+  var html;
+  if (tab === "overview") html = renderOverviewView();
+  else if (tab === "week") html = renderWeekView();
+  else if (tab === "skills") html = renderSkillsView();
+  else if (tab === "races") html = renderRacesView();
+  el.innerHTML = html;
+}
+
+function renderAll() {
+  renderTimeline();
+  renderTabs();
+  renderView();
+}
+
+// ─── EVENT DELEGATION ───────────────────────────────────────────────────────
+document.addEventListener("click", function(e){
+  var node = e.target;
+  while (node && node !== document.body && !node.getAttribute("data-action")) {
+    node = node.parentNode;
+  }
+  if (!node || node === document.body) return;
+  var action = node.getAttribute("data-action");
+
+  if (action === "tab") {
+    tab = node.getAttribute("data-tab");
+    renderTabs(); renderView();
+  } else if (action === "selweek") {
+    sel = parseInt(node.getAttribute("data-week"), 10);
+    tab = "week";
+    renderTimeline(); renderTabs(); renderView();
+  } else if (action === "toggle-day") {
+    var key = node.getAttribute("data-key");
+    openDays[key] = !openDays[key];
+    renderView();
+  } else if (action === "check-day") {
+    e.stopPropagation();
+    var i = node.getAttribute("data-i");
+    var k = "d:" + sel + ":" + i;
+    setS(k, !getS(k));
+    renderView();
+  } else if (action === "check-skill" || action === "check-prep") {
+    var sk = node.getAttribute("data-key");
+    setS(sk, !getS(sk));
+    renderView();
+  }
+});
+
+// ─── SERVICE WORKER (offline copy onto the phone) ───────────────────────────
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("./service-worker.js").catch(function(){});
+  });
+}
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+renderAll();
+</script>
+</body>
+</html>
