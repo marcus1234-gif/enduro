@@ -305,8 +305,13 @@ var OVR = {
     5: { t:"ride", h:"🎓 Hard Enduro Clinic — Day 1",     b:["The single highest-leverage purchase toward Silver Kings","A coach compresses months of trial-and-error into a weekend","Film yourself — review with the instructor","Soak up everything on rock, climbs, and obstacle technique"], n:"Book this early — good hard-enduro clinics fill up. Worth traveling for." },
     6: { t:"ride", h:"🎓 Hard Enduro Clinic — Day 2",     b:["Drill the Day 1 lessons until they stick","Ask specifically about Bronze-course-style terrain","Write down 5 things to train for the next 8 weeks","These become your Spring Terrain focuses"] },
   },
+  44:{
+    0: { t:"rest", h:"⚖️ GO / NO-GO Checkpoint",          b:["Honest self-assessment: are the technical skills there for Bronze?","Can you ride steep, rocky, technical terrain for 2+ hrs without falling apart?","Where are you on the Skills Ladder — through Tier 2, into Tier 3?","GO: commit, enter, book travel. NO-GO: push to 2028 or pick a smaller hard enduro first — both are smart","Decide now — Moab next week is your first real test of the call"], n:"This checkpoint is not pass/fail on you — it's a planning decision. Choosing to wait a year is a sign of good judgment, not failure." },
+  },
   45:{
-    0: { t:"rest", h:"⚖️ GO / NO-GO Checkpoint",          b:["Honest self-assessment: are the technical skills there for Bronze?","Can you ride steep, rocky, technical terrain for 2+ hrs without falling apart?","Where are you on the Skills Ladder — through Tier 2, into Tier 3?","GO: commit, enter, book travel. NO-GO: push to 2028 or pick a smaller hard enduro first — both are smart","Decide now so the next 9 weeks have a clear target"], n:"This checkpoint is not pass/fail on you — it's a planning decision. Choosing to wait a year is a sign of good judgment, not failure." },
+    4: { t:"rest", h:"Rest + Travel to Moab",             b:["Drive to Moab, UT (~8 hrs)","Easy spin to shake out the drive","Bike prepped, gear staged","Early night before race day"] },
+    5: { t:"race", h:"🏁 MOAB Hard Enduro — Day 1 (required)", b:["AMA West round on Moab slickrock — your spring proving ground","Race your amateur class — goal is to finish strong and gather data","Slickrock, ledges, technical climbs: a true Silver Kings rehearsal","Pace it, manage arm pump, eat and drink early"] },
+    6: { t:"race", h:"🏁 MOAB — Day 2 / Debrief",          b:["Race or pack out per format","Honest debrief: how did the rock terrain treat you?","This result is your real Silver Kings go/no-go data","Long drive home — good mental debrief time"] },
   },
   50:{
     5: { t:"ride", h:"🏔️ Bronze Course Simulation",       b:["Your dress rehearsal: 4 hrs, Bronze-length, Bronze-style terrain","Match the profile from your 2026 scouting photos as closely as you can","Same pre-ride food, hydration, and gear you'll race with","If you finish this strong, you're ready for Kellogg"], n:"This is the most important ride of the spring. Treat it exactly like race day." },
@@ -338,7 +343,11 @@ var RACES = [
   { week:12, type:"RACE #1", name:"SIDRA Grassroots",           date:"Aug 29–30",  loc:"Preston, ID",         color:"#F04E00", goal:"Finish the race. C class. Your goal is to learn the format — starts, pacing, course reading.", prep:["Join AMA ($49/yr) at americanmotorcyclist.com","Join SIDRA at sidraracing.org","Complete online pre-entry before the event","AMA card ready: digital or printed","Spare kit: master link, 2× zip ties, inline fuses, patch kit, multitool","Hydration pack stocked for 2-hr effort","Petcock verified (!), all fluids fresh","Goal: finish and record your gap to mid-pack"] },
   { week:14, type:"RACE #2", name:"SIDRA Elk Horn",             date:"Sep 12–13",  loc:"Baker City, OR",      color:"#8B5CF6", goal:"Apply Race 1 lessons. Finish closer to mid-pack than Preston.", prep:["Same checklist as Race 1","Add anything that was missing at Grassroots","Set a lap-time target based on Race 1 result","Write a pacing plan for laps 2 and 3","If arm pump was Race 1 limiter: add a relaxation cue note on bar pad"] },
   { week:20, type:"RACE #3", name:"SIDRA / WHS Tamarack",       date:"Oct 24–25",  loc:"Tamarack Resort, ID", color:"#22C55E", goal:"Mid-pack finish in C class. This is what 20 weeks of training is for.", prep:["SIDRA + AMA memberships current","Pre-entry complete for both SIDRA and WHS co-sanction","Drive to Tamarack (~1.5 hrs from Boise) Thu/Fri","Course recon ride Friday if permitted (20 min easy)","Full bike prep completed Thursday","Carb-load lightly Mon–Thu","Arrive race morning 75 min early","Target: finish within 10% of class leader time"] },
-  { week:54, type:"A-RACE", name:"Silver Kings — Bronze, B class", date:"Jun 2027", loc:"Kellogg, ID", color:"#D97706", goal:"THE goal. Finish the Bronze course at a Hard Enduro World Championship round. A full year of work, one rung up the ladder.", prep:["Decision confirmed at the spring GO/NO-GO checkpoint (Week 45)","Hard-enduro clinic completed (Phase 8)","Bronze course scouted at the 2026 spectate trip — photos turned into spring curriculum","4-hour Bronze simulation ride completed strong (Week 50)","Through Tier 2 and into Tier 3 of the Skills Ladder","Registration + sanction paperwork done when 2027 entry opens","Brutal-course bike prep: fresh everything, doubled spare kit","Accommodation booked in Kellogg (~7 hrs from Boise)","Confirm 2027 dates and format when published"] },
+  { week:22, type:"ENDUROCROSS", optional:true, name:"EnduroCross — Salt Lake City", date:"Nov 7, 2026", loc:"Maverik Center, SLC, UT", color:"#06B6D4", goal:"OPTIONAL. Indoor obstacle racing — logs, rocks, tires. The closest discipline to Silver Kings' endurocross-style sections. Race the amateur class or spectate to study lines.", prep:["Enter the amateur / intermediate class if racing","~5 hrs from Boise","Indoor = weatherproof early-off-season skill hit","Even spectating is a clinic in obstacle technique"] },
+  { week:23, type:"ENDUROCROSS", optional:true, name:"EnduroCross — Idaho Falls Finale", date:"Nov 2026 (confirm)", loc:"Idaho Falls, ID", color:"#06B6D4", goal:"OPTIONAL. The two-night season finale, in-state (~4.5 hrs) — the closest big obstacle racing to home. Ideal post-season skill work.", prep:["Confirm exact finale dates when published","Amateur class entry if racing","Two-night format = concentrated obstacle reps","Closest EnduroCross round to Boise"] },
+  { week:41, type:"HARD ENDURO", optional:true, name:"Grinding Stone Hard Enduro", date:"~Mar 2027 (confirm)", loc:"Page, AZ", color:"#DC2626", goal:"OPTIONAL. AMA West round on desert rock — a real hard-enduro tune-up ~3 months out. Long haul, but doubles as a warm-weather terrain camp.", prep:["Confirm 2027 dates when the AMA West schedule drops","Enter the C or B amateur class","~9–10 hrs from Boise — plan it as a terrain trip","Desert rock = ideal Silver Kings terrain practice"] },
+  { week:45, type:"HARD ENDURO", name:"Moab Hard Enduro at Area BFE", date:"~Apr 2027 (confirm)", loc:"Moab, UT", color:"#DC2626", goal:"REQUIRED. Your spring proving ground — a real AMA West hard enduro on world-class Moab rock, ~2 months before Silver Kings. The dress rehearsal that matters.", prep:["Confirm 2027 dates when the AMA West schedule drops","Enter the C or B amateur class","~8 hrs from Boise","Slickrock and ledges = the closest thing to Silver Kings terrain you can race beforehand","Treat the result as real go/no-go data for Silver Kings"] },
+  { week:54, type:"A-RACE", name:"Silver Kings — Bronze, B class", date:"Jun 2027", loc:"Kellogg, ID", color:"#D97706", goal:"THE goal. Finish the Bronze course at a Hard Enduro World Championship round. A full year of work, one rung up the ladder.", prep:["Decision confirmed at the spring GO/NO-GO checkpoint (Week 44)","Hard-enduro clinic completed (Phase 8)","Bronze course scouted at the 2026 spectate trip — photos turned into spring curriculum","Moab Hard Enduro raced as the spring proving ground (Week 45)","4-hour Bronze simulation ride completed strong (Week 50)","Through Tier 2 and into Tier 3 of the Skills Ladder","Registration + sanction paperwork done when 2027 entry opens","Brutal-course bike prep: fresh everything, doubled spare kit","Accommodation booked in Kellogg (~7 hrs from Boise)","Confirm 2027 dates and format when published"] },
 ];
 
 var SKILLS = [
@@ -412,7 +421,7 @@ function renderTimeline() {
     cells +=
       '<div class="tl-cell" data-action="selweek" data-week="' + w + '">' +
         '<div class="tl-num" style="background:' + bg + ';border:' + border + ';color:' + col + '">' + w + '</div>' +
-        '<div class="tl-dot" style="background:' + (race ? race.color : "transparent") + '"></div>' +
+        '<div class="tl-dot" style="' + (race ? (race.optional ? ("border:1.5px solid " + race.color + ";background:transparent") : ("background:" + race.color)) : "background:transparent") + '"></div>' +
       '</div>';
   }
   var bands = "";
@@ -503,7 +512,7 @@ function renderWeekView() {
 
   if (race) {
     html += '<div style="padding:10px 12px;border-radius:8px;background:' + race.color + '14;border:1px solid ' + race.color + '45;margin-bottom:12px">' +
-      '<span style="font-size:10px;font-weight:700;color:' + race.color + ';letter-spacing:.1em">' + race.type + ' · THIS WEEK</span>' +
+      '<span style="font-size:10px;font-weight:700;color:' + race.color + ';letter-spacing:.1em">' + race.type + (race.optional ? " · OPTIONAL" : "") + ' · THIS WEEK</span>' +
       '<p style="margin:2px 0 0;font-size:13px;color:#d4d4dc;font-weight:600">' + esc(race.name) + ' · ' + race.date + '</p>' +
       '<p style="margin:2px 0 0;font-size:11px;color:#888">' + esc(race.loc) + ' · ' + esc(race.goal) + '</p>' +
     '</div>';
@@ -602,14 +611,20 @@ function renderRacesView() {
   var html = "";
   RACES.forEach(function(r){
     var doneCount = r.prep.filter(function(_, i){ return getS("rp:" + r.week + ":" + i); }).length;
-    html += '<div style="margin-bottom:14px;border-radius:12px;background:#1a1a1d;border:1px solid ' + r.color + '35;overflow:hidden">' +
-      '<div style="padding:12px 14px;background:' + r.color + '10;border-bottom:1px solid ' + r.color + '25">' +
+    var tag = r.optional
+      ? '<span style="font-size:8px;font-weight:700;color:#888;background:#2a2a2e;border:1px dashed #555;border-radius:4px;padding:1px 5px;letter-spacing:.08em">OPTIONAL</span>'
+      : '<span style="font-size:8px;font-weight:700;color:' + r.color + ';background:' + r.color + '1f;border-radius:4px;padding:1px 5px;letter-spacing:.08em">CORE</span>';
+    var brd = r.optional ? ("1px dashed " + r.color + "55") : ("1px solid " + r.color + "35");
+    html += '<div style="margin-bottom:14px;border-radius:12px;background:#1a1a1d;border:' + brd + ';overflow:hidden;opacity:' + (r.optional ? ".92" : "1") + '">' +
+      '<div style="padding:12px 14px;background:' + r.color + (r.optional ? "08" : "10") + ';border-bottom:1px solid ' + r.color + '25">' +
         '<div style="display:flex;justify-content:space-between;align-items:center">' +
           '<span style="font-size:10px;font-weight:700;color:' + r.color + ';letter-spacing:.1em;font-family:monospace">' + r.type + ' · Week ' + r.week + '</span>' +
           '<span style="font-size:11px;color:#666">' + r.date + '</span>' +
         '</div>' +
-        '<div style="font-size:15px;font-weight:700;color:#f0f0ec;margin-top:2px">' + esc(r.name) + '</div>' +
-        '<div style="font-size:11px;color:#777;margin-top:1px">' + esc(r.loc) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:7px;margin-top:3px">' +
+          '<span style="font-size:15px;font-weight:700;color:#f0f0ec">' + esc(r.name) + '</span>' + tag +
+        '</div>' +
+        '<div style="font-size:11px;color:#777;margin-top:2px">' + esc(r.loc) + '</div>' +
         '<div style="font-size:12px;color:#999;margin-top:6px;font-style:italic;line-height:1.4">' + esc(r.goal) + '</div>' +
       '</div>' +
       '<div style="padding:12px 14px">' +
@@ -722,7 +737,7 @@ function renderHomeView() {
   if (nextRace) {
     html += '<div class="nextchip">' +
       '<span style="font-size:11px;color:#555">Next:</span>' +
-      '<span style="font-size:11px;font-weight:700;color:' + nextRace.color + '">' + esc(nextRace.name) + ' · ' + nextRace.date + '</span>' +
+      '<span style="font-size:11px;font-weight:700;color:' + nextRace.color + '">' + esc(nextRace.name) + (nextRace.optional ? " (optional)" : "") + ' · ' + nextRace.date + '</span>' +
       '<span style="font-size:11px;color:#444">' + (wtr === 0 ? "← THIS WEEK" : (wtr + " week" + (wtr > 1 ? "s" : "") + " away")) + '</span>' +
     '</div>';
   }

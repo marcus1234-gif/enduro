@@ -1,6 +1,6 @@
 // Service worker: copies the app into the phone's storage so it opens offline.
 // Bump CACHE to a new value whenever you change the app to force a refresh.
-const CACHE = "enduro-v8";
+const CACHE = "enduro-v9";
 const ASSETS = [
   "./",
   "./index.html",
