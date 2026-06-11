@@ -60,6 +60,25 @@
   .install-tip { margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: rgba(240,78,0,.08); border: 1px solid rgba(240,78,0,.25); }
   .install-tip .t { font-size: 11px; font-weight: 700; color: #F04E00; letter-spacing: .08em; text-transform: uppercase; font-family: monospace; margin-bottom: 5px; }
   .install-tip p { margin: 0; font-size: 12px; color: #9a9aa2; line-height: 1.5; }
+  .hero { padding: 18px 16px; border-radius: 14px; background: #161619; border: 1px solid #242428; margin-bottom: 18px; }
+  .hl { font-size: 19px; font-weight: 800; line-height: 1.15; text-align: center; }
+  .hl-sub { font-size: 11px; color: #666; font-family: monospace; margin-top: 4px; letter-spacing: .03em; text-align: center; }
+  .ringwrap { display: flex; justify-content: center; margin: 16px 0 12px; }
+  .ring-fg { transition: stroke-dashoffset .9s cubic-bezier(.4,0,.2,1); }
+  .pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .pill { display: flex; align-items: center; gap: 6px; background: #1d1d21; border: 1px solid #2a2a2e; border-radius: 20px; padding: 5px 11px; font-size: 11px; color: #9a9aa2; }
+  .pill .pd { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .pill b { color: #f0f0ec; font-weight: 700; }
+  .count-line { text-align: center; font-size: 11px; color: #555; margin-top: 10px; font-family: monospace; }
+  .nextchip { margin-top: 14px; padding-top: 12px; border-top: 1px solid #242428; display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .sec-label { font-size: 11px; color: #333; text-transform: uppercase; letter-spacing: .12em; font-family: monospace; margin: 0 0 12px; }
+  .catrow { margin-bottom: 12px; }
+  .catrow .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px; }
+  .catrow .nm { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #c4c4cc; }
+  .catrow .nm .cd { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .catrow .ct { font-size: 10px; color: #555; font-family: monospace; }
+  .bar { height: 7px; background: #202024; border-radius: 4px; overflow: hidden; }
+  .bar > div { height: 100%; border-radius: 4px; width: 0; transition: width .8s ease; }
 </style>
 </head>
 <body>
@@ -234,7 +253,7 @@ var SKILLS = [
 // ─── STATE ──────────────────────────────────────────────────────────────────
 var cur = currentWeek();
 var sel = cur;
-var tab = "week";
+var tab = "home";
 var openDays = {}; // key "week:index" -> bool
 
 function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -267,7 +286,7 @@ function renderTimeline() {
 // ─── RENDER: TABS ───────────────────────────────────────────────────────────
 function renderTabs() {
   var defs = [
-    { id:"overview", label:"Overview" },
+    { id:"home", label:"Home" },
     { id:"week",     label:"Week " + sel },
     { id:"skills",   label:"Skills" },
     { id:"races",    label:"Races" },
@@ -408,17 +427,87 @@ function renderRacesView() {
 }
 
 // ─── RENDER: OVERVIEW VIEW ──────────────────────────────────────────────────
-function renderOverviewView() {
+// ─── PROGRESS STATS ─────────────────────────────────────────────────────────
+function computeStats() {
+  var cats = {
+    mob:  { label:"Mobility",  color:"#6366F1", done:0, total:0 },
+    str:  { label:"Strength",  color:"#3B82F6", done:0, total:0 },
+    z2:   { label:"Zone 2",    color:"#10B981", done:0, total:0 },
+    hiit: { label:"HIIT",      color:"#F59E0B", done:0, total:0 },
+    ride: { label:"Riding",    color:"#F04E00", done:0, total:0 },
+    rec:  { label:"Recovery",  color:"#6B7280", done:0, total:0 },
+  };
+  function bucket(t){ return t === "rest" ? "rec" : t; }
+  var trainDone = 0, trainTotal = 0;
+  for (var w = 1; w <= 20; w++) {
+    for (var d = 0; d < 7; d++) {
+      var day = getDay(w, d);
+      if (day.t === "race" || day.t === "watch") continue; // no checkbox on event days
+      var b = bucket(day.t);
+      if (!cats[b]) continue;
+      cats[b].total++; trainTotal++;
+      if (getS("d:" + w + ":" + d)) { cats[b].done++; trainDone++; }
+    }
+  }
+  var skDone = 0, skTotal = 0;
+  SKILLS.forEach(function(cat, ci){ cat.items.forEach(function(_, i){ skTotal++; if (getS("sk:" + ci + ":" + i)) skDone++; }); });
+  var rpDone = 0, rpTotal = 0;
+  RACES.forEach(function(r){ r.prep.forEach(function(_, i){ rpTotal++; if (getS("rp:" + r.week + ":" + i)) rpDone++; }); });
+  return {
+    cats: cats, order: ["mob","str","z2","hiit","ride","rec"],
+    trainDone: trainDone, trainTotal: trainTotal,
+    skDone: skDone, skTotal: skTotal,
+    rpDone: rpDone, rpTotal: rpTotal,
+    allDone: trainDone + skDone + rpDone,
+    allTotal: trainTotal + skTotal + rpTotal,
+  };
+}
+function pctOf(d, t){ return t ? Math.round(d / t * 100) : 0; }
+
+function ringSvg(pct, color) {
+  var r = 60, C = 2 * Math.PI * r;
+  var off = C - (pct / 100) * C;
+  return '<svg width="138" height="138" viewBox="0 0 132 132">' +
+    '<circle cx="66" cy="66" r="60" fill="none" stroke="#242428" stroke-width="12"/>' +
+    '<circle class="ring-fg" cx="66" cy="66" r="60" fill="none" stroke="' + color + '" stroke-width="12" stroke-linecap="round" ' +
+      'stroke-dasharray="' + C.toFixed(1) + '" style="stroke-dashoffset:' + C.toFixed(1) + '" data-offset="' + off.toFixed(1) + '" transform="rotate(-90 66 66)"/>' +
+    '<text x="66" y="61" text-anchor="middle" font-size="32" font-weight="800" fill="#f0f0ec" font-family="system-ui,sans-serif">' + pct + '%</text>' +
+    '<text x="66" y="82" text-anchor="middle" font-size="10" fill="#666" font-family="monospace" letter-spacing="1">OVERALL</text>' +
+  '</svg>';
+}
+
+function headline(pct) {
+  if (pct >= 100) return "Every box checked. Go ride.";
+  if (pct >= 80)  return "Final push — stay smooth.";
+  if (pct >= 60)  return "Tamarack's coming into view.";
+  if (pct >= 40)  return "Deep in the build now.";
+  if (pct >= 20)  return "Momentum's building.";
+  if (pct >= 1)   return "The base is forming.";
+  return "Time to put in the work.";
+}
+
+function renderHomeView() {
   var nextRace = RACES.find(function(r){ return r.week >= cur; });
   var curPhase = ph(cur);
   var wtr = nextRace ? (nextRace.week - cur) : null;
+  var s = computeStats();
+  var allPct = pctOf(s.allDone, s.allTotal);
+  var weeksToTam = Math.max(20 - cur, 0);
 
-  var html = '<div style="padding:14px;border-radius:12px;background:' + curPhase.color + '10;border:1px solid ' + curPhase.color + '30;margin-bottom:16px">' +
-    '<div style="font-size:10px;color:' + curPhase.color + ';font-weight:700;text-transform:uppercase;letter-spacing:.12em;font-family:monospace;margin-bottom:3px">Now · Week ' + cur + ' of 20</div>' +
-    '<div style="font-size:19px;font-weight:800;color:#f0f0ec">Phase ' + curPhase.id + ': ' + esc(curPhase.name) + '</div>' +
-    '<div style="font-size:13px;color:#888;font-style:italic;margin-top:2px">' + esc(curPhase.tagline) + '</div>';
+  // Hero card with overall ring
+  var html = '<div class="hero">' +
+    '<div class="hl">' + headline(allPct) + '</div>' +
+    '<div class="hl-sub">WEEK ' + cur + ' OF 20 · PHASE ' + curPhase.id + ': ' + esc(curPhase.name).toUpperCase() +
+      (weeksToTam > 0 ? ' · ' + weeksToTam + ' TO TAMARACK' : ' · RACE WEEK') + '</div>' +
+    '<div class="ringwrap">' + ringSvg(allPct, curPhase.color) + '</div>' +
+    '<div class="pills">' +
+      '<span class="pill"><span class="pd" style="background:#F04E00"></span>Training <b>' + pctOf(s.trainDone, s.trainTotal) + '%</b></span>' +
+      '<span class="pill"><span class="pd" style="background:#8B5CF6"></span>Skills <b>' + pctOf(s.skDone, s.skTotal) + '%</b></span>' +
+      '<span class="pill"><span class="pd" style="background:#22C55E"></span>Race prep <b>' + pctOf(s.rpDone, s.rpTotal) + '%</b></span>' +
+    '</div>' +
+    '<div class="count-line">' + s.allDone + ' of ' + s.allTotal + ' items complete</div>';
   if (nextRace) {
-    html += '<div style="margin-top:10px;padding-top:10px;border-top:1px solid ' + curPhase.color + '20;display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+    html += '<div class="nextchip">' +
       '<span style="font-size:11px;color:#555">Next:</span>' +
       '<span style="font-size:11px;font-weight:700;color:' + nextRace.color + '">' + esc(nextRace.name) + ' · ' + nextRace.date + '</span>' +
       '<span style="font-size:11px;color:#444">' + (wtr === 0 ? "← THIS WEEK" : (wtr + " week" + (wtr > 1 ? "s" : "") + " away")) + '</span>' +
@@ -426,7 +515,23 @@ function renderOverviewView() {
   }
   html += '</div>';
 
-  html += '<div style="font-size:11px;color:#333;text-transform:uppercase;letter-spacing:.12em;font-family:monospace;margin-bottom:10px">Program Arc</div>';
+  // Category breakdown
+  html += '<div class="sec-label">Training by category</div>';
+  s.order.forEach(function(key){
+    var c = s.cats[key];
+    if (!c.total) return;
+    var p = pctOf(c.done, c.total);
+    html += '<div class="catrow">' +
+      '<div class="top">' +
+        '<div class="nm"><span class="cd" style="background:' + c.color + '"></span>' + c.label +
+          '<span style="font-size:10px;color:' + c.color + ';font-family:monospace;font-weight:700">' + p + '%</span></div>' +
+        '<span class="ct">' + c.done + '/' + c.total + '</span>' +
+      '</div>' +
+      '<div class="bar"><div data-width="' + p + '" style="background:' + c.color + '"></div></div>' +
+    '</div>';
+  });
+
+  html += '<div class="sec-label" style="margin-top:18px">Program Arc</div>';
   PHASES.forEach(function(p){
     var isActive = p.weeks.indexOf(cur) !== -1;
     var isDone = Math.max.apply(null, p.weeks) < cur;
@@ -463,11 +568,25 @@ function renderOverviewView() {
 function renderView() {
   var el = document.getElementById("view");
   var html;
-  if (tab === "overview") html = renderOverviewView();
+  if (tab === "home") html = renderHomeView();
   else if (tab === "week") html = renderWeekView();
   else if (tab === "skills") html = renderSkillsView();
   else if (tab === "races") html = renderRacesView();
   el.innerHTML = html;
+  if (tab === "home") animateHome();
+}
+
+function animateHome() {
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){
+    var el = document.getElementById("view");
+    if (!el) return;
+    el.querySelectorAll(".ring-fg").forEach(function(c){
+      c.style.strokeDashoffset = c.getAttribute("data-offset");
+    });
+    el.querySelectorAll(".bar > div[data-width]").forEach(function(b){
+      b.style.width = b.getAttribute("data-width") + "%";
+    });
+  }); });
 }
 
 function renderAll() {
