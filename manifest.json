@@ -1,7 +1,7 @@
 {
   "name": "Enduro Racing Program",
   "short_name": "Enduro",
-  "description": "20-week enduro training and race-prep tracker for the Beta 300RR Race.",
+  "description": "53-week enduro training, race-prep, and bike-maintenance tracker for the Beta 300RR Race.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
