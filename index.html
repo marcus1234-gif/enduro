@@ -17,7 +17,7 @@
   body {
     background: #111113; color: #f0f0ec;
     font-family: system-ui, -apple-system, sans-serif;
-    min-height: 100vh; padding-bottom: 40px;
+    min-height: 100vh; padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
     -webkit-text-size-adjust: 100%;
     padding-top: env(safe-area-inset-top, 0px);
     padding-left: env(safe-area-inset-left, 0px);
@@ -35,9 +35,9 @@
   .tl-bandrow { display: flex; gap: 3px; min-width: max-content; margin-top: 5px; }
   .tl-band { height: 19px; border-radius: 4px; display: flex; align-items: center; justify-content: center; padding: 0 4px; overflow: hidden; cursor: pointer; box-sizing: border-box; }
   .tl-band span { font-size: 9px; font-weight: 700; font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: .02em; }
-  .tabs { display: flex; gap: 2px; padding: 12px 16px 0; border-bottom: 1px solid #1e1e21; }
-  .tab { padding: 7px 13px; border-radius: 7px 7px 0 0; border: none; cursor: pointer; font-size: 12px; font-weight: 600; background: transparent; color: #555; border-bottom: 2px solid transparent; }
-  .tab.active { background: #1a1a1d; color: #f0f0ec; border-bottom: 2px solid #F04E00; }
+  .tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; display: flex; gap: 4px; padding: 7px 10px; padding-bottom: calc(7px + env(safe-area-inset-bottom, 0px)); background: #161619; border-top: 1px solid #242428; }
+  .tab { flex: 1; padding: 8px 4px; border-radius: 9px; border: none; cursor: pointer; font-size: 11.5px; font-weight: 600; background: transparent; color: #6a6a72; text-align: center; transition: color .15s, background .15s; }
+  .tab.active { background: rgba(240,78,0,0.12); color: #F04E00; }
   .view { padding: 16px; }
   .daycard { border-radius: 10px; background: #1A1A1D; border: 1px solid #242428; margin-bottom: 7px; overflow: hidden; transition: border-color .2s; }
   .dc-head { display: flex; align-items: center; gap: 9px; padding: 10px 12px; cursor: pointer; }
